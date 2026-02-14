@@ -22,6 +22,8 @@ pnpm-debug.log*
 
 # supabase local artifacts
 .supabase/
+supabase/.temp/
+supabase/.branches/
 
 # macOS-specific files
 .DS_Store
