@@ -1,0 +1,123 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const error = Astro.url.searchParams.get('error');
+const status = Astro.url.searchParams.get('status');
+const next = Astro.url.searchParams.get('next') ?? '/author';
+
+const errorMessage =
+  error === 'missing_credentials'
+    ? 'Email y contraseña son obligatorios.'
+    : error === 'invalid_credentials'
+      ? 'No se pudo iniciar sesión. Revisa tus credenciales.'
+      : null;
+
+const statusMessage =
+  status === 'logged_out'
+    ? 'Sesión cerrada correctamente.'
+    : null;
+---
+
+<Layout title="Acceso autor | A poc a poc i amb bona lletra" description="Acceso para autores y administración.">
+  <section class="container login-page">
+    <div class="login-card">
+      <p class="eyebrow">Área privada</p>
+      <h1>Acceso de autor</h1>
+      <p>Inicia sesión para entrar a tu espacio personal de edición.</p>
+
+      {errorMessage && <p class="message error">{errorMessage}</p>}
+      {statusMessage && <p class="message ok">{statusMessage}</p>}
+
+      <form method="post" action="/api/auth/login" class="login-form">
+        <input type="hidden" name="next" value={next} />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required autocomplete="email" />
+
+        <label for="password">Contraseña</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password" />
+
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<style lang="scss">
+  .login-page {
+    padding-block: var(--space-12);
+    display: grid;
+    place-items: center;
+  }
+
+  .login-card {
+    width: min(28rem, 100%);
+    padding: var(--space-8);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    font-size: 0.75rem;
+  }
+
+  h1 {
+    margin-block: var(--space-2) var(--space-3);
+    font-family: var(--font-display);
+  }
+
+  .login-form {
+    margin-top: var(--space-6);
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  label {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  input {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.8rem;
+    font: inherit;
+    background: #fff;
+  }
+
+  button {
+    margin-top: var(--space-2);
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font: inherit;
+    color: #fff;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+  }
+
+  .message {
+    margin-top: var(--space-4);
+    padding: 0.7rem 0.8rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+  }
+
+  .message.error {
+    background: #fbe5e1;
+    color: #8f2c21;
+  }
+
+  .message.ok {
+    background: #e5f6ea;
+    color: #1f6a3d;
+  }
+</style>
