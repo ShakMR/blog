@@ -13,7 +13,8 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
-    "supabase:status": "supabase status"
+    "supabase:status": "supabase status",
+    "user:create-local-author": "node scripts/create-local-author.mjs"
   },
   "dependencies": {
     "@astrojs/vercel": "^7.8.2",

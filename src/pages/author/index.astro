@@ -1,0 +1,107 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import {
+  getAccessTokenFromCookies,
+  getAuthenticatedAuthorContext,
+} from '../../lib/auth/session';
+
+const accessToken = getAccessTokenFromCookies(Astro.cookies);
+
+if (!accessToken) {
+  return Astro.redirect('/auth/login?next=/author');
+}
+
+const context = await getAuthenticatedAuthorContext(accessToken);
+
+if (!context) {
+  return Astro.redirect('/auth/login?error=invalid_credentials&next=/author');
+}
+
+const { profile, user } = context;
+---
+
+<Layout title="Espacio personal | A poc a poc i amb bona lletra" description="Panel de autor.">
+  <section class="container author-page">
+    <p class="eyebrow">Sesión activa</p>
+    <h1>Bienvenida, {profile.display_name}</h1>
+    <p>
+      Este espacio ya está protegido para autores. En UC2 añadiremos el editor WYSIWYG y gestión de
+      historias.
+    </p>
+
+    <dl class="meta">
+      <div>
+        <dt>Rol</dt>
+        <dd>{profile.role}</dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd>{user.email}</dd>
+      </div>
+      <div>
+        <dt>Idioma</dt>
+        <dd>{profile.locale}</dd>
+      </div>
+    </dl>
+
+    <form method="post" action="/api/auth/logout">
+      <button type="submit">Cerrar sesión</button>
+    </form>
+  </section>
+</Layout>
+
+<style lang="scss">
+  .author-page {
+    padding-block: var(--space-12);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    font-size: 0.75rem;
+  }
+
+  h1 {
+    margin-block: var(--space-2) var(--space-3);
+    font-family: var(--font-display);
+  }
+
+  .meta {
+    margin-block: var(--space-6);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  .meta div {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    background: var(--color-surface);
+  }
+
+  dt {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+    font-weight: 600;
+  }
+
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    font: inherit;
+    color: #fff;
+    background: #7f3025;
+  }
+</style>

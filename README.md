@@ -74,5 +74,29 @@ After first dependency and Docker image download, local testing works offline:
 
 ## Current status
 
-- Phase: `infra-bootstrap`
-- Next feature branch: `uc1-author-login`
+- Phase: `uc1-author-login`
+- Current feature: author login + protected author space
+
+## UC1 local VQA
+
+1. Ensure Supabase local stack is running.
+2. Create a local author user:
+
+```bash
+npm run user:create-local-author -- author@example.com Password123! "Autor Local" autor-local
+```
+
+Note for `zsh`: if your password has `!`, wrap it in single quotes.
+
+3. Start app:
+
+```bash
+npm run dev
+```
+
+4. Validate flow:
+- Open `/auth/login`.
+- Login with the created credentials.
+- Confirm redirect to `/author`.
+- Confirm role/email/locale are visible.
+- Click `Cerrar sesión` and confirm redirect to `/auth/login?status=logged_out`.
