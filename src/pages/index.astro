@@ -1,0 +1,62 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getMessages } from '../lib/i18n';
+
+const t = getMessages('es');
+---
+
+<Layout title="A poc a poc i amb bona lletra" description={t.home.subtitle}>
+  <section class="hero container">
+    <p class="eyebrow">Base v0.1</p>
+    <h1>{t.home.title}</h1>
+    <p>{t.home.subtitle}</p>
+    <div class="cta-row">
+      <a class="button" href="/stories">{t.home.cta}</a>
+      <span>{t.home.status}</span>
+    </div>
+  </section>
+</Layout>
+
+<style lang="scss">
+  .hero {
+    padding-block: var(--space-12);
+  }
+
+  .eyebrow {
+    color: var(--color-accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 4.25rem);
+    line-height: 1.05;
+  }
+
+  p {
+    max-width: 56ch;
+    color: var(--color-text-muted);
+  }
+
+  .cta-row {
+    margin-top: var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .button {
+    border-radius: 999px;
+    padding: 0.7rem 1.2rem;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+    box-shadow: var(--shadow-soft);
+  }
+</style>

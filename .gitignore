@@ -1,0 +1,33 @@
+# build output
+/dist/
+.vercel/
+coverage/
+
+# generated types
+/.astro/
+
+# dependencies
+/node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local env
+.env
+.env.*
+!.env.example
+
+# supabase local artifacts
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# macOS-specific files
+.DS_Store
+
+# IDE settings
+.idea/
+.vscode/settings.json

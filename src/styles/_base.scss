@@ -1,0 +1,29 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at 10% -10%, #ffffff 0%, transparent 40%),
+    radial-gradient(circle at 90% 0%, #f0dfcc 0%, transparent 35%),
+    var(--color-bg);
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+}
+
+.container {
+  width: min(1100px, 92vw);
+  margin-inline: auto;
+}

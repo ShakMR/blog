@@ -1,0 +1,106 @@
+---
+import '../styles/global.scss';
+import { getMessages, resolveLocale } from '../lib/i18n';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'A poc a poc i amb bona lletra',
+  description = 'Blog de relatos cortos.',
+} = Astro.props;
+
+const locale = resolveLocale(Astro.url.pathname);
+const t = getMessages(locale);
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-grid">
+        <a class="brand" href="/">A poc a poc i amb bona lletra</a>
+        <nav>
+          <ul>
+            <li><a href="/">{t.nav.home}</a></li>
+            <li><a href="/stories">{t.nav.latestStories}</a></li>
+            <li><a href="/authors">{t.nav.authors}</a></li>
+            <li><a href="/about">{t.nav.about}</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style lang="scss">
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--color-border);
+    backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--color-bg) 86%, white 14%);
+  }
+
+  .header-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 4rem;
+    gap: var(--space-4);
+  }
+
+  .brand {
+    font-family: var(--font-display);
+    text-decoration: none;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    font-size: 0.92rem;
+  }
+
+  nav a {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    transition: color var(--transition-base);
+  }
+
+  nav a:hover {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 720px) {
+    .header-grid {
+      flex-direction: column;
+      align-items: flex-start;
+      padding-block: var(--space-3);
+    }
+
+    nav ul {
+      flex-wrap: wrap;
+      row-gap: var(--space-2);
+    }
+  }
+</style>
