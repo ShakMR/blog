@@ -1,0 +1,34 @@
+{
+  "name": "a-poc-a-poc-i-amb-bona-lletra",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "astro preview",
+    "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:status": "supabase status"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^7.8.2",
+    "@supabase/supabase-js": "^2.49.1",
+    "astro": "^4.16.19",
+    "sass": "^1.97.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.6",
+    "@vitest/coverage-v8": "^1.6.1",
+    "typescript": "^5.9.2",
+    "vitest": "^1.6.1"
+  },
+  "engines": {
+    "node": ">=18.20.8"
+  }
+}
