@@ -1,0 +1,105 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { createServerSupabaseClient } from '../../lib/supabase/server';
+import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
+import type { StoryRecord } from '../../lib/stories/types';
+
+const supabase = createServerSupabaseClient();
+const { data: stories = [] } = await supabase
+  .from('stories')
+  .select('*')
+  .eq('status', 'published')
+  .order('published_at', { ascending: false })
+  .limit(30);
+
+const typedStories = stories as StoryRecord[];
+---
+
+<Layout title="Últimas historias | A poc a poc i amb bona lletra" description="Publicaciones más recientes.">
+  <section class="container stories-page">
+    <p class="eyebrow">UC3</p>
+    <h1>Últimas publicaciones</h1>
+
+    {typedStories.length === 0 ? (
+      <p>Aún no hay historias publicadas.</p>
+    ) : (
+      <ul class="stories-grid">
+        {typedStories.map((story) => {
+          const coverUrl = toPublicCoverUrl(story.cover_image_path);
+          return (
+            <li>
+              {coverUrl && <img src={coverUrl} alt={`Portada de ${story.title}`} loading="lazy" />}
+              <div class="content">
+                <h2><a href={`/stories/${story.slug}`}>{story.title}</a></h2>
+                <p>{story.subtitle}</p>
+                <p class="meta">Publicada: {formatDate(story.published_at)}</p>
+                <p class="meta">Última edición: {formatDate(story.updated_at)}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </section>
+</Layout>
+
+<style lang="scss">
+  .stories-page {
+    padding-block: var(--space-12);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  h1 {
+    margin-top: var(--space-2);
+    font-family: var(--font-display);
+  }
+
+  .stories-grid {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-6) 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .stories-grid li {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  .stories-grid img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .content {
+    padding: var(--space-4);
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+  }
+
+  h2 a {
+    text-decoration: none;
+  }
+
+  .meta {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--color-text-muted);
+  }
+</style>

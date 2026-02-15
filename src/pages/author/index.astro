@@ -25,9 +25,14 @@ const { profile, user } = context;
     <p class="eyebrow">Sesión activa</p>
     <h1>Bienvenida, {profile.display_name}</h1>
     <p>
-      Este espacio ya está protegido para autores. En UC2 añadiremos el editor WYSIWYG y gestión de
+      Este espacio ya está protegido para autores. Ya puedes crear, editar, publicar y gestionar tus
       historias.
     </p>
+
+    <div class="quick-actions">
+      <a href="/author/stories">Gestionar historias</a>
+      <a href="/author/stories/new">Nueva historia</a>
+    </div>
 
     <dl class="meta">
       <div>
@@ -74,6 +79,22 @@ const { profile, user } = context;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
     gap: var(--space-4);
+  }
+
+  .quick-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin: var(--space-4) 0 var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .quick-actions a {
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.5rem 0.85rem;
+    text-decoration: none;
+    color: var(--color-accent);
+    background: var(--color-surface);
   }
 
   .meta div {

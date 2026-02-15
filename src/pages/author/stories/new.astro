@@ -1,0 +1,44 @@
+---
+import StoryEditorForm from '../../../components/StoryEditorForm.astro';
+import Layout from '../../../layouts/Layout.astro';
+import {
+  getAccessTokenFromCookies,
+  getAuthenticatedAuthorContext,
+} from '../../../lib/auth/session';
+
+const accessToken = getAccessTokenFromCookies(Astro.cookies);
+if (!accessToken) {
+  return Astro.redirect('/auth/login?next=/author/stories/new');
+}
+
+const context = await getAuthenticatedAuthorContext(accessToken);
+if (!context) {
+  return Astro.redirect('/auth/login?error=invalid_credentials&next=/author/stories/new');
+}
+---
+
+<Layout title="Nueva historia | A poc a poc i amb bona lletra" description="Editor WYSIWYG para crear historias.">
+  <section class="container editor-page">
+    <h1>Nueva historia</h1>
+    <a class="back-link" href="/author/stories">Volver a mis historias</a>
+
+    <StoryEditorForm action="/api/author/stories/save" submitLabel="Guardar historia" />
+  </section>
+</Layout>
+
+<style lang="scss">
+  .editor-page {
+    padding-block: var(--space-12);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: var(--space-3);
+    color: var(--color-accent);
+  }
+</style>

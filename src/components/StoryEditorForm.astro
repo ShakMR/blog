@@ -1,0 +1,241 @@
+---
+interface Props {
+  action: string;
+  submitLabel: string;
+  storyId?: string;
+  title?: string;
+  subtitle?: string;
+  slug?: string;
+  tags?: string;
+  publishedAt?: string;
+  existingCoverPath?: string;
+  coverUrl?: string | null;
+  commentsEnabled?: boolean;
+  status?: 'draft' | 'published';
+  bodyHtml?: string;
+  bodyJson?: string;
+}
+
+const {
+  action,
+  submitLabel,
+  storyId,
+  title = '',
+  subtitle = '',
+  slug = '',
+  tags = '',
+  publishedAt = '',
+  existingCoverPath = '',
+  coverUrl = null,
+  commentsEnabled = true,
+  status = 'draft',
+  bodyHtml = '',
+  bodyJson = '{}',
+} = Astro.props;
+---
+
+<form method="post" action={action} enctype="multipart/form-data" id="story-form">
+  {storyId && <input type="hidden" name="storyId" value={storyId} />}
+  <input type="hidden" name="existingCoverPath" value={existingCoverPath} />
+
+  <div class="fields">
+    <label>Título <input name="title" required maxlength="180" value={title} /></label>
+    <label>Subtítulo <input name="subtitle" maxlength="220" value={subtitle} /></label>
+    <label>Slug (opcional) <input name="slug" placeholder="se-genera-desde-el-titulo" value={slug} /></label>
+    <label>Tags (coma separadas) <input name="tags" placeholder="cuento, fantasia" value={tags} /></label>
+    <label>Fecha publicación <input type="date" name="publishedAt" value={publishedAt} /></label>
+    <label>Portada <input type="file" name="coverImage" accept="image/*" /></label>
+  </div>
+
+  {coverUrl && (
+    <figure class="cover-preview">
+      <img src={coverUrl} alt="Portada actual" loading="lazy" />
+      <figcaption>Portada actual</figcaption>
+    </figure>
+  )}
+
+  <div class="toggles">
+    <label>
+      <input type="hidden" name="commentsEnabled" value="false" />
+      <input type="checkbox" name="commentsEnabled" value="true" checked={commentsEnabled} />
+      Permitir comentarios
+    </label>
+    <label>
+      Estado
+      <select name="status">
+        <option value="draft" selected={status === 'draft'}>Borrador</option>
+        <option value="published" selected={status === 'published'}>Publicada</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="editor-shell">
+    <div class="toolbar">
+      <button type="button" data-cmd="bold">Negrita</button>
+      <button type="button" data-cmd="italic">Cursiva</button>
+      <button type="button" data-cmd="bulletList">Lista</button>
+      <button type="button" data-cmd="heading">H2</button>
+      <button type="button" data-cmd="paragraph">Párrafo</button>
+    </div>
+    <div id="editor" class="editor"></div>
+  </div>
+
+  <input type="hidden" name="bodyHtml" id="body-html" value={bodyHtml} />
+  <input type="hidden" name="bodyJson" id="body-json" value={bodyJson} />
+
+  <button type="submit" class="submit">{submitLabel}</button>
+</form>
+
+<script>
+  import { Editor } from '@tiptap/core';
+  import StarterKit from '@tiptap/starter-kit';
+
+  const editorElement = document.getElementById('editor') as HTMLDivElement | null;
+  const bodyHtml = document.getElementById('body-html') as HTMLInputElement | null;
+  const bodyJson = document.getElementById('body-json') as HTMLInputElement | null;
+  const form = document.getElementById('story-form') as HTMLFormElement | null;
+
+  if (!editorElement || !bodyHtml || !bodyJson || !form) {
+    throw new Error('Editor form is not mounted.');
+  }
+
+  const editor = new Editor({
+    element: editorElement,
+    extensions: [StarterKit],
+    content: bodyHtml.value || '<p></p>',
+    onUpdate: ({ editor: currentEditor }) => {
+      bodyHtml.value = currentEditor.getHTML();
+      bodyJson.value = JSON.stringify(currentEditor.getJSON());
+    },
+  });
+
+  const sync = () => {
+    bodyHtml.value = editor.getHTML();
+    bodyJson.value = JSON.stringify(editor.getJSON());
+  };
+
+  sync();
+
+  form.addEventListener('submit', () => {
+    sync();
+  });
+
+  document.querySelectorAll('[data-cmd]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const command = button.getAttribute('data-cmd');
+      if (!command) return;
+
+      if (command === 'heading') {
+        editor.chain().focus().toggleHeading({ level: 2 }).run();
+      } else if (command === 'paragraph') {
+        editor.chain().focus().setParagraph().run();
+      } else if (command === 'bold') {
+        editor.chain().focus().toggleBold().run();
+      } else if (command === 'italic') {
+        editor.chain().focus().toggleItalic().run();
+      } else if (command === 'bulletList') {
+        editor.chain().focus().toggleBulletList().run();
+      }
+
+      sync();
+    });
+  });
+</script>
+
+<style lang="scss">
+  form {
+    margin-top: var(--space-6);
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  label {
+    display: grid;
+    gap: var(--space-2);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  input,
+  select {
+    font: inherit;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.8rem;
+    background: #fff;
+  }
+
+  .cover-preview {
+    margin: 0;
+  }
+
+  .cover-preview img {
+    width: min(420px, 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+  }
+
+  .toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+  }
+
+  .toggles label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .editor-shell {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-accent);
+  }
+
+  .toolbar button {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    padding: 0.35rem 0.55rem;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.85rem;
+  }
+
+  .editor {
+    min-height: 18rem;
+    padding: var(--space-4);
+  }
+
+  :global(.ProseMirror) {
+    outline: none;
+    min-height: 16rem;
+  }
+
+  .submit {
+    justify-self: start;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.2rem;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+    font: inherit;
+  }
+</style>
