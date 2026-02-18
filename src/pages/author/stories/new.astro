@@ -5,6 +5,10 @@ import {
   getAccessTokenFromCookies,
   getAuthenticatedAuthorContext,
 } from '../../../lib/auth/session';
+import { getMessages, resolveRequestLocale } from '../../../lib/i18n';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
 
 const accessToken = getAccessTokenFromCookies(Astro.cookies);
 if (!accessToken) {
@@ -17,12 +21,12 @@ if (!context) {
 }
 ---
 
-<Layout title="Nueva historia | A poc a poc i amb bona lletra" description="Editor WYSIWYG para crear historias.">
+<Layout title={`${t.editor.newTitle} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
   <section class="container editor-page">
-    <h1>Nueva historia</h1>
-    <a class="back-link" href="/author/stories">Volver a mis historias</a>
+    <h1>{t.editor.newTitle}</h1>
+    <a class="back-link" href="/author/stories">{t.editor.backToStories}</a>
 
-    <StoryEditorForm action="/api/author/stories/save" submitLabel="Guardar historia" />
+    <StoryEditorForm action="/api/author/stories/save" submitLabel={t.editor.saveStory} labels={t.editor} />
   </section>
 </Layout>
 

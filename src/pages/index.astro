@@ -1,11 +1,14 @@
 ---
+import StoryCard from '../components/StoryCard.astro';
 import Layout from '../layouts/Layout.astro';
+import { getMessages, resolveRequestLocale } from '../lib/i18n';
 import { createServerSupabaseClient } from '../lib/supabase/server';
-import { formatDate, toPublicCoverUrl } from '../lib/stories/utils';
 import type { StoryRecord } from '../lib/stories/types';
-import { getMessages } from '../lib/i18n';
+import { formatDate, toPublicCoverUrl } from '../lib/stories/utils';
 
-const t = getMessages('es');
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+
 const supabase = createServerSupabaseClient();
 const { data: stories = [] } = await supabase
   .from('stories')
@@ -16,44 +19,50 @@ const { data: stories = [] } = await supabase
 
 const typedStories = stories as StoryRecord[];
 const [featuredStory, ...restStories] = typedStories;
-const featuredCoverUrl = featuredStory ? toPublicCoverUrl(featuredStory.cover_image_path) : null;
 ---
 
 <Layout title="A poc a poc i amb bona lletra" description={t.home.subtitle}>
   <section class="hero container">
-    <p class="eyebrow">Base v0.1</p>
+    <p class="eyebrow">{t.home.eyebrow}</p>
     <h1>{t.home.title}</h1>
     <p>{t.home.subtitle}</p>
-    <div class="cta-row">
-      <span>{t.home.status}</span>
-    </div>
+    <p class="status">{t.home.status}</p>
   </section>
 
   <section class="container feed">
-    <h2>Últimas publicaciones</h2>
+    <h2>{t.home.latestTitle}</h2>
     {!featuredStory ? (
-      <p class="empty-state">Aún no hay historias publicadas.</p>
+      <p class="empty-state">{t.home.empty}</p>
     ) : (
       <>
-        <article class="featured">
-          {featuredCoverUrl && <img src={featuredCoverUrl} alt={`Portada de ${featuredStory.title}`} loading="lazy" />}
-          <div class="featured-content">
-            <p class="badge">Más reciente</p>
-            <h3><a href={`/stories/${featuredStory.slug}`}>{featuredStory.title}</a></h3>
-            <p>{featuredStory.subtitle}</p>
-            <p class="meta">Publicada: {formatDate(featuredStory.published_at)}</p>
-            <p class="meta">Última edición: {formatDate(featuredStory.updated_at)}</p>
-          </div>
-        </article>
+        <StoryCard
+          variant="row"
+          title={featuredStory.title}
+          subtitle={featuredStory.subtitle}
+          coverUrl={toPublicCoverUrl(featuredStory.cover_image_path)}
+          coverAlt={`Portada de ${featuredStory.title}`}
+          titleHref={`/stories/${featuredStory.slug}`}
+          statusLabel={t.home.featuredBadge}
+          publishedAtLabel={t.stories.publishedAt}
+          publishedAtValue={formatDate(featuredStory.published_at)}
+          updatedAtLabel={t.stories.updatedAt}
+          updatedAtValue={formatDate(featuredStory.updated_at)}
+        />
 
         {restStories.length > 0 && (
           <ul class="feed-list">
             {restStories.map((story) => (
               <li>
-                <h3><a href={`/stories/${story.slug}`}>{story.title}</a></h3>
-                <p>{story.subtitle}</p>
-                <p class="meta">Publicada: {formatDate(story.published_at)}</p>
-                <p class="meta">Última edición: {formatDate(story.updated_at)}</p>
+                <StoryCard
+                  title={story.title}
+                  subtitle={story.subtitle}
+                  coverAlt={`Portada de ${story.title}`}
+                  titleHref={`/stories/${story.slug}`}
+                  publishedAtLabel={t.stories.publishedAt}
+                  publishedAtValue={formatDate(story.published_at)}
+                  updatedAtLabel={t.stories.updatedAt}
+                  updatedAtValue={formatDate(story.updated_at)}
+                />
               </li>
             ))}
           </ul>
@@ -74,6 +83,7 @@ const featuredCoverUrl = featuredStory ? toPublicCoverUrl(featuredStory.cover_im
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-size: 0.78rem;
+    margin: 0;
   }
 
   h1 {
@@ -89,14 +99,6 @@ const featuredCoverUrl = featuredStory ? toPublicCoverUrl(featuredStory.cover_im
     color: var(--color-text-muted);
   }
 
-  .cta-row {
-    margin-top: var(--space-6);
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    flex-wrap: wrap;
-  }
-
   .feed {
     padding-bottom: var(--space-12);
   }
@@ -105,50 +107,6 @@ const featuredCoverUrl = featuredStory ? toPublicCoverUrl(featuredStory.cover_im
     margin: 0 0 var(--space-4);
     font-family: var(--font-display);
     font-size: clamp(1.6rem, 3.5vw, 2.2rem);
-  }
-
-  .featured {
-    display: grid;
-    grid-template-columns: minmax(0, 320px) 1fr;
-    gap: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    background: var(--color-surface);
-  }
-
-  .featured img {
-    width: 100%;
-    height: 100%;
-    min-height: 220px;
-    object-fit: cover;
-  }
-
-  .featured-content {
-    padding: var(--space-4);
-  }
-
-  .badge {
-    margin: 0;
-    width: fit-content;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.74rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #fff;
-    background: #7f3025;
-  }
-
-  .featured h3,
-  .feed-list h3 {
-    margin: var(--space-2) 0;
-    font-family: var(--font-display);
-  }
-
-  .featured h3 a,
-  .feed-list h3 a {
-    text-decoration: none;
   }
 
   .feed-list {
@@ -160,27 +118,12 @@ const featuredCoverUrl = featuredStory ? toPublicCoverUrl(featuredStory.cover_im
     gap: var(--space-4);
   }
 
-  .feed-list li {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    padding: var(--space-4);
-  }
-
-  .meta {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.86rem;
-  }
-
   .empty-state {
     margin: 0;
     color: var(--color-text-muted);
   }
 
-  @media (max-width: 860px) {
-    .featured {
-      grid-template-columns: 1fr;
-    }
+  .status {
+    margin-top: var(--space-3);
   }
 </style>

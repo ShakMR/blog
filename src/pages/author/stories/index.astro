@@ -1,21 +1,26 @@
 ---
+import StoryCard from '../../../components/StoryCard.astro';
 import Layout from '../../../layouts/Layout.astro';
 import {
   getAccessTokenFromCookies,
   getAuthenticatedAuthorContext,
 } from '../../../lib/auth/session';
+import { getMessages, resolveRequestLocale } from '../../../lib/i18n';
 import { createServerSupabaseClient } from '../../../lib/supabase/server';
 import { formatDate, toPublicCoverUrl } from '../../../lib/stories/utils';
 import type { StoryRecord } from '../../../lib/stories/types';
 
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+
 const accessToken = getAccessTokenFromCookies(Astro.cookies);
 if (!accessToken) {
-  return Astro.redirect('/auth/login?next=/author/stories');
+  return Astro.redirect(`/auth/login?next=${encodeURIComponent('/author/stories')}`);
 }
 
 const context = await getAuthenticatedAuthorContext(accessToken);
 if (!context) {
-  return Astro.redirect('/auth/login?error=invalid_credentials&next=/author/stories');
+  return Astro.redirect(`/auth/login?error=invalid_credentials&next=${encodeURIComponent('/author/stories')}`);
 }
 
 const authorClient = createServerSupabaseClient({ accessToken });
@@ -30,48 +35,52 @@ const status = Astro.url.searchParams.get('status');
 const error = Astro.url.searchParams.get('error');
 ---
 
-<Layout title="Mis historias | A poc a poc i amb bona lletra" description="Gestión de historias del autor.">
+<Layout title={`${t.authorStories.title} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
   <section class="container author-stories-page">
     <div class="header-row">
       <div>
-        <p class="eyebrow">Autor</p>
-        <h1>Mis historias</h1>
+        <p class="eyebrow">{t.authorStories.eyebrow}</p>
+        <h1>{t.authorStories.title}</h1>
       </div>
-      <a class="button" href="/author/stories/new">Nueva historia</a>
+      <a class="button" href="/author/stories/new">{t.authorStories.newStory}</a>
     </div>
 
-    {status && <p class="message ok">Operación completada: {status}</p>}
-    {error && <p class="message error">No se pudo completar la operación: {error}</p>}
+    {status && <p class="message ok">{t.authorStories.operationDone}: {status}</p>}
+    {error && <p class="message error">{t.authorStories.operationFailed}: {error}</p>}
 
     {typedStories.length === 0 ? (
       <div class="empty-state">
-        <p>Aún no tienes historias. Crea la primera.</p>
+        <p>{t.authorStories.empty}</p>
       </div>
     ) : (
       <ul class="stories-list">
         {typedStories.map((story) => {
-          const coverUrl = toPublicCoverUrl(story.cover_image_path);
           const draftUrl = `/draft/${story.draft_access_token}`;
           const publicUrl = `/stories/${story.slug}`;
           return (
             <li>
-              {coverUrl && <img src={coverUrl} alt="Portada" loading="lazy" />}
-              <div class="story-content">
-                <p class="pill">{story.status}</p>
-                <h2>{story.title}</h2>
-                <p>{story.subtitle}</p>
-                <p class="meta">Última edición: {formatDate(story.updated_at)}</p>
-                {story.published_at && <p class="meta">Publicación: {formatDate(story.published_at)}</p>}
-                <div class="actions">
-                  <a href={`/author/stories/${story.id}/edit`}>Editar</a>
-                  <a href={draftUrl}>Ver borrador</a>
-                  {story.status === 'published' && <a href={publicUrl}>Ver publicada</a>}
+              <StoryCard
+                variant="row"
+                title={story.title}
+                subtitle={story.subtitle}
+                coverUrl={toPublicCoverUrl(story.cover_image_path)}
+                coverAlt={`Portada de ${story.title}`}
+                statusLabel={story.status === 'published' ? t.authorStories.statusPublished : t.authorStories.statusDraft}
+                updatedAtLabel={t.authorStories.lastEdit}
+                updatedAtValue={formatDate(story.updated_at)}
+                publishedAtLabel={t.authorStories.publicationDate}
+                publishedAtValue={story.published_at ? formatDate(story.published_at) : null}
+              >
+                <Fragment slot="actions">
+                  <a href={`/author/stories/${story.id}/edit`}>{t.authorStories.edit}</a>
+                  <a href={draftUrl}>{t.authorStories.viewDraft}</a>
+                  {story.status === 'published' && <a href={publicUrl}>{t.authorStories.viewPublished}</a>}
                   <form method="post" action="/api/author/stories/delete">
                     <input type="hidden" name="storyId" value={story.id} />
-                    <button type="submit">Eliminar</button>
+                    <button type="submit">{t.authorStories.delete}</button>
                   </form>
-                </div>
-              </div>
+                </Fragment>
+              </StoryCard>
             </li>
           );
         })}
@@ -123,66 +132,8 @@ const error = Astro.url.searchParams.get('error');
     gap: var(--space-4);
   }
 
-  .stories-list li {
-    display: grid;
-    grid-template-columns: 160px 1fr;
-    gap: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    overflow: hidden;
-  }
-
-  .stories-list img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    min-height: 180px;
-  }
-
-  .story-content {
-    padding: var(--space-4);
-  }
-
-  .story-content h2 {
-    margin: var(--space-2) 0;
-    font-family: var(--font-display);
-  }
-
-  .pill {
-    display: inline-flex;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #fff;
-    background: #7f3025;
-  }
-
-  .meta {
+  .stories-list > li {
     margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.86rem;
-  }
-
-  .actions {
-    margin-top: var(--space-4);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    align-items: center;
-  }
-
-  .actions a,
-  .actions button {
-    font: inherit;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    padding: 0;
-    color: var(--color-accent);
-    text-decoration: underline;
   }
 
   .message {
@@ -205,11 +156,5 @@ const error = Astro.url.searchParams.get('error');
     padding: var(--space-6);
     border-radius: var(--radius-md);
     border: 1px dashed var(--color-border);
-  }
-
-  @media (max-width: 720px) {
-    .stories-list li {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

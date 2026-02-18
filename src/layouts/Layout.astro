@@ -1,6 +1,8 @@
 ---
 import '../styles/global.scss';
-import { getMessages, resolveLocale } from '../lib/i18n';
+import { siteConfig } from '../config/site';
+import { getMessages, resolveRequestLocale } from '../lib/i18n';
+import { getAccessTokenFromCookies, getAuthSessionContext } from '../lib/auth/session';
 
 interface Props {
   title?: string;
@@ -14,8 +16,13 @@ const {
   robots = 'index,follow',
 } = Astro.props;
 
-const locale = resolveLocale(Astro.url.pathname);
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
+
+const accessToken = getAccessTokenFromCookies(Astro.cookies);
+const session = accessToken ? await getAuthSessionContext(accessToken) : null;
+const isAuthor = session?.profile?.role === 'author' || session?.profile?.role === 'admin';
+const nextPath = `${Astro.url.pathname}${Astro.url.search}`;
 ---
 
 <!doctype html>
@@ -39,7 +46,32 @@ const t = getMessages(locale);
             <li><a href="/stories">{t.nav.latestStories}</a></li>
             <li><a href="/authors">{t.nav.authors}</a></li>
             <li><a href="/about">{t.nav.about}</a></li>
-            <li><a href="/auth/login">Acceso</a></li>
+            {session ? (
+              <>
+                {isAuthor && <li><a href="/author">{t.nav.authorSpace}</a></li>}
+                <li class="auth-indicator">{t.nav.signedInAs}: {session.user.email}</li>
+                <li>
+                  <form method="post" action="/api/auth/logout" class="inline-form">
+                    <button type="submit">{t.nav.logout}</button>
+                  </form>
+                </li>
+              </>
+            ) : (
+              <li><a href={`/auth/login?next=${encodeURIComponent(nextPath)}`}>{t.nav.login}</a></li>
+            )}
+            <li>
+              <form method="post" action="/api/i18n/locale" class="inline-form locale-form">
+                <input type="hidden" name="next" value={nextPath} />
+                <label for="locale-selector">{t.nav.language}</label>
+                <select id="locale-selector" name="locale" onchange="this.form.submit()">
+                  {siteConfig.locales.map((option) => (
+                    <option value={option} selected={option === locale}>
+                      {t.localeNames[option]}
+                    </option>
+                  ))}
+                </select>
+              </form>
+            </li>
           </ul>
         </nav>
       </div>
@@ -83,19 +115,51 @@ const t = getMessages(locale);
     margin: 0;
     padding: 0;
     font-size: 0.92rem;
+    flex-wrap: wrap;
   }
 
-  nav a {
+  nav a,
+  nav button {
     text-decoration: none;
     color: var(--color-text-muted);
     transition: color var(--transition-base);
+    background: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
   }
 
-  nav a:hover {
+  nav a:hover,
+  nav button:hover {
     color: var(--color-accent);
   }
 
-  @media (max-width: 720px) {
+  .auth-indicator {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+  }
+
+  .inline-form {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .locale-form label {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+  }
+
+  .locale-form select {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font: inherit;
+    padding: 0.2rem 0.4rem;
+  }
+
+  @media (max-width: 860px) {
     .header-grid {
       flex-direction: column;
       align-items: flex-start;
@@ -103,7 +167,6 @@ const t = getMessages(locale);
     }
 
     nav ul {
-      flex-wrap: wrap;
       row-gap: var(--space-2);
     }
   }

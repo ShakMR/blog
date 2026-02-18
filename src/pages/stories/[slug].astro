@@ -1,8 +1,12 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
 import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
 import type { StoryRecord } from '../../lib/stories/types';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
 
 const slug = Astro.params.slug;
 const supabase = createServerSupabaseClient();
@@ -22,8 +26,8 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
 ---
 
 <Layout
-  title={typedStory ? `${typedStory.title} | A poc a poc i amb bona lletra` : 'Historia no encontrada'}
-  description={typedStory?.subtitle ?? 'Historia no encontrada'}
+  title={typedStory ? `${typedStory.title} | A poc a poc i amb bona lletra` : t.stories.notFound}
+  description={typedStory?.subtitle ?? t.stories.notFound}
 >
   <section class="container story-page">
     {typedStory ? (
@@ -31,8 +35,8 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
         {coverUrl && <img src={coverUrl} alt={`Portada de ${typedStory.title}`} class="cover" loading="lazy" />}
         <h1>{typedStory.title}</h1>
         <p class="subtitle">{typedStory.subtitle}</p>
-        <p class="meta">Publicada: {formatDate(typedStory.published_at)}</p>
-        <p class="meta">Última edición: {formatDate(typedStory.updated_at)}</p>
+        <p class="meta">{t.stories.publishedAt}: {formatDate(typedStory.published_at)}</p>
+        <p class="meta">{t.stories.updatedAt}: {formatDate(typedStory.updated_at)}</p>
 
         <div class="tags">
           {typedStory.tags.map((tag) => (
@@ -43,7 +47,7 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
         <div class="content" set:html={typedStory.body_html}></div>
       </article>
     ) : (
-      <p>Historia no encontrada.</p>
+      <p>{t.stories.notFound}</p>
     )}
   </section>
 </Layout>

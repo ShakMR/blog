@@ -5,9 +5,13 @@ import {
   getAccessTokenFromCookies,
   getAuthenticatedAuthorContext,
 } from '../../../../lib/auth/session';
+import { getMessages, resolveRequestLocale } from '../../../../lib/i18n';
 import { createServerSupabaseClient } from '../../../../lib/supabase/server';
 import { toDateValue, toPublicCoverUrl } from '../../../../lib/stories/utils';
 import type { StoryRecord } from '../../../../lib/stories/types';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
 
 const accessToken = getAccessTokenFromCookies(Astro.cookies);
 if (!accessToken) {
@@ -40,14 +44,15 @@ const typedStory = story as StoryRecord;
 const coverUrl = toPublicCoverUrl(typedStory.cover_image_path);
 ---
 
-<Layout title={`Editar: ${typedStory.title} | A poc a poc i amb bona lletra`} description="Editor WYSIWYG de historias.">
+<Layout title={`${t.editor.editTitle}: ${typedStory.title} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
   <section class="container editor-page">
-    <h1>Editar historia</h1>
-    <a class="back-link" href="/author/stories">Volver a mis historias</a>
+    <h1>{t.editor.editTitle}</h1>
+    <a class="back-link" href="/author/stories">{t.editor.backToStories}</a>
 
     <StoryEditorForm
       action="/api/author/stories/save"
-      submitLabel="Guardar cambios"
+      submitLabel={t.editor.saveChanges}
+      labels={t.editor}
       storyId={typedStory.id}
       title={typedStory.title}
       subtitle={typedStory.subtitle}

@@ -1,9 +1,13 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import { getMessages, resolveRequestLocale } from '../../../lib/i18n';
 import { createServerSupabaseClient } from '../../../lib/supabase/server';
 import { formatDate, toPublicCoverUrl } from '../../../lib/stories/utils';
 import type { StoryRecord } from '../../../lib/stories/types';
 import { ACCESS_TOKEN_COOKIE } from '../../../lib/auth/session';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
 
 const token = Astro.params.token;
 const authToken = Astro.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
@@ -23,22 +27,22 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
 ---
 
 <Layout
-  title={typedStory ? `Borrador: ${typedStory.title}` : 'Borrador no encontrado'}
-  description={typedStory?.subtitle ?? 'Borrador no encontrado'}
+  title={typedStory ? `${t.draft.titlePrefix}: ${typedStory.title}` : t.draft.notFound}
+  description={typedStory?.subtitle ?? t.draft.notFound}
   robots="noindex,nofollow"
 >
   <section class="container story-page">
     {typedStory ? (
       <article>
-        <p class="eyebrow">Borrador privado</p>
+        <p class="eyebrow">{t.draft.privateEyebrow}</p>
         {coverUrl && <img src={coverUrl} alt={`Portada de ${typedStory.title}`} class="cover" loading="lazy" />}
         <h1>{typedStory.title}</h1>
         <p class="subtitle">{typedStory.subtitle}</p>
-        <p class="meta">Última edición: {formatDate(typedStory.updated_at)}</p>
+        <p class="meta">{t.draft.lastEdit}: {formatDate(typedStory.updated_at)}</p>
         <div class="content" set:html={typedStory.body_html}></div>
       </article>
     ) : (
-      <p>Borrador no encontrado.</p>
+      <p>{t.draft.notFound}</p>
     )}
   </section>
 </Layout>

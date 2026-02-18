@@ -2,9 +2,32 @@
 import ImageField from './ImageFields.astro';
 import Label from './Label.astro';
 
+interface EditorLabels {
+  fieldTitle: string;
+  fieldSubtitle: string;
+  fieldSlugOptional: string;
+  slugPlaceholder: string;
+  fieldTags: string;
+  tagsPlaceholder: string;
+  fieldPublishedAt: string;
+  fieldCover: string;
+  coverCta: string;
+  coverEmpty: string;
+  commentsEnabled: string;
+  status: string;
+  statusDraft: string;
+  statusPublished: string;
+  toolbarBold: string;
+  toolbarItalic: string;
+  toolbarList: string;
+  toolbarHeading: string;
+  toolbarParagraph: string;
+}
+
 interface Props {
   action: string;
   submitLabel: string;
+  labels: EditorLabels;
   storyId?: string;
   title?: string;
   subtitle?: string;
@@ -22,6 +45,7 @@ interface Props {
 const {
   action,
   submitLabel,
+  labels,
   storyId,
   title = '',
   subtitle = '',
@@ -42,39 +66,45 @@ const {
   <input type="hidden" name="existingCoverPath" value={existingCoverPath} />
 
   <div class="fields">
-    <Label>Título <input name="title" required maxlength="180" value={title} /></Label>
-    <Label>Subtítulo <input name="subtitle" maxlength="220" value={subtitle} /></Label>
-    <Label>Slug (opcional) <input name="slug" placeholder="se-genera-desde-el-titulo" value={slug} /></Label>
-    <Label>Tags (coma separadas) <input name="tags" placeholder="cuento, fantasia" value={tags} /></Label>
-    <Label>Fecha publicación <input type="date" name="publishedAt" value={publishedAt} /></Label>
+    <Label>{labels.fieldTitle} <input name="title" required maxlength="180" value={title} /></Label>
+    <Label>{labels.fieldSubtitle} <input name="subtitle" maxlength="220" value={subtitle} /></Label>
+    <Label>{labels.fieldSlugOptional} <input name="slug" placeholder={labels.slugPlaceholder} value={slug} /></Label>
+    <Label>{labels.fieldTags} <input name="tags" placeholder={labels.tagsPlaceholder} value={tags} /></Label>
+    <Label>{labels.fieldPublishedAt} <input type="date" name="publishedAt" value={publishedAt} /></Label>
   </div>
 
   <div class="cover-preview">
-    <ImageField name="coverImage" label="Portada" value={coverUrl} ctaLabel="Click para cambiar la imagen" />
+    <ImageField
+      name="coverImage"
+      label={labels.fieldCover}
+      value={coverUrl}
+      ctaLabel={labels.coverCta}
+      emptyLabel={labels.coverEmpty}
+    />
   </div>
 
   <div class="toggles">
     <Label>
       <input type="hidden" name="commentsEnabled" value="false" />
       <input type="checkbox" name="commentsEnabled" value="true" checked={commentsEnabled} />
-      Permitir comentarios
+      {labels.commentsEnabled}
     </Label>
     <Label>
-      Estado
+      {labels.status}
       <select name="status">
-        <option value="draft" selected={status === 'draft'}>Borrador</option>
-        <option value="published" selected={status === 'published'}>Publicada</option>
+        <option value="draft" selected={status === 'draft'}>{labels.statusDraft}</option>
+        <option value="published" selected={status === 'published'}>{labels.statusPublished}</option>
       </select>
     </Label>
   </div>
 
   <div class="editor-shell">
     <div class="toolbar">
-      <button type="button" data-cmd="bold">Negrita</button>
-      <button type="button" data-cmd="italic">Cursiva</button>
-      <button type="button" data-cmd="bulletList">Lista</button>
-      <button type="button" data-cmd="heading">H2</button>
-      <button type="button" data-cmd="paragraph">Párrafo</button>
+      <button type="button" data-cmd="bold">{labels.toolbarBold}</button>
+      <button type="button" data-cmd="italic">{labels.toolbarItalic}</button>
+      <button type="button" data-cmd="bulletList">{labels.toolbarList}</button>
+      <button type="button" data-cmd="heading">{labels.toolbarHeading}</button>
+      <button type="button" data-cmd="paragraph">{labels.toolbarParagraph}</button>
     </div>
     <div id="editor" class="editor"></div>
   </div>
@@ -98,10 +128,29 @@ const {
     throw new Error('Editor form is not mounted.');
   }
 
+  const parseEditorJson = (value: string): Record<string, unknown> | null => {
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return null;
+      }
+      const candidate = parsed as Record<string, unknown>;
+      if (candidate.type === 'doc' || Array.isArray(candidate.content)) {
+        return candidate;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const initialContent = (parseEditorJson(bodyJson.value) ?? bodyHtml.value) || '<p></p>';
+
   const editor = new Editor({
     element: editorElement,
     extensions: [StarterKit],
-    content: bodyHtml.value || '<p></p>',
+    content: initialContent,
     onUpdate: ({ editor: currentEditor }) => {
       bodyHtml.value = currentEditor.getHTML();
       bodyJson.value = JSON.stringify(currentEditor.getJSON());
@@ -166,11 +215,7 @@ const {
   .cover-preview {
     margin: 0;
     width: 420px;
-  }
-
-  .cover-preview img {
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    max-width: 100%;
   }
 
   .toggles {

@@ -5,19 +5,27 @@ interface Props {
   name: string;
   label: string;
   value?: string | null;
-  ctaLabel: string;
+  ctaLabel?: string;
+  emptyLabel?: string;
 }
 
-const { name, label, value = null, ctaLabel = 'Click para cambiar la imagen' } = Astro.props;
+const {
+  name,
+  label,
+  value = null,
+  ctaLabel = 'Click para cambiar la imagen',
+  emptyLabel = 'Sin portada',
+} = Astro.props;
+
 const inputId = `${name}-input`;
 const hasImage = Boolean(value);
 ---
 
 <div class="image-field">
   <Label htmlFor={inputId}>{label}</Label>
-  <input type="file" name={name} id={inputId} />
+  <input type="file" name={name} id={inputId} accept="image/*" />
   <div class:list={['image-field-container', { 'is-empty': !hasImage }]}>
-    {hasImage ? <img src={value ?? undefined} alt={label} /> : <div class="image-field-placeholder">Sin portada</div>}
+    {hasImage ? <img src={value ?? undefined} alt={label} /> : <div class="image-field-placeholder">{emptyLabel}</div>}
     <label for={inputId} class="image-field-cta">{ctaLabel}</label>
   </div>
 </div>
@@ -29,16 +37,8 @@ const hasImage = Boolean(value);
     gap: var(--space-2);
   }
 
-  .image-field [type="file"] {
+  .image-field [type='file'] {
     display: none;
-  }
-
-  .image-field img {
-    max-width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
   }
 
   .image-field-container {
@@ -47,6 +47,13 @@ const hasImage = Boolean(value);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     overflow: hidden;
+  }
+
+  .image-field img {
+    width: 100%;
+    height: 100%;
+    min-height: 12rem;
+    object-fit: cover;
   }
 
   .image-field-placeholder {
@@ -60,7 +67,6 @@ const hasImage = Boolean(value);
   .image-field-cta {
     cursor: pointer;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
     font-size: 0.8rem;
     text-align: center;
     padding: var(--space-2);
@@ -79,15 +85,12 @@ const hasImage = Boolean(value);
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
+    border-radius: 0;
   }
 
   .image-field-container.is-empty:hover .image-field-cta {
     inset: auto var(--space-3) var(--space-3) var(--space-3);
-    width: auto;
-    height: auto;
+    border-radius: var(--radius-sm);
   }
 </style>
