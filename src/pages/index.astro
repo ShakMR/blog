@@ -25,7 +25,6 @@ const featuredCoverUrl = featuredStory ? toPublicCoverUrl(featuredStory.cover_im
     <h1>{t.home.title}</h1>
     <p>{t.home.subtitle}</p>
     <div class="cta-row">
-      <a class="button" href="/stories">{t.home.cta}</a>
       <span>{t.home.status}</span>
     </div>
   </section>
@@ -96,15 +95,6 @@ const featuredCoverUrl = featuredStory ? toPublicCoverUrl(featuredStory.cover_im
     align-items: center;
     gap: var(--space-4);
     flex-wrap: wrap;
-  }
-
-  .button {
-    border-radius: 999px;
-    padding: 0.7rem 1.2rem;
-    text-decoration: none;
-    color: #fff;
-    background: linear-gradient(120deg, #8f4521, #bc6d3d);
-    box-shadow: var(--shadow-soft);
   }
 
   .feed {
