@@ -1,6 +1,5 @@
 ---
 import '../styles/global.scss';
-import { siteConfig } from '../config/site';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
 import { getAccessTokenFromCookies, getAuthSessionContext } from '../lib/auth/session';
 
@@ -21,8 +20,14 @@ const t = getMessages(locale);
 
 const accessToken = getAccessTokenFromCookies(Astro.cookies);
 const session = accessToken ? await getAuthSessionContext(accessToken) : null;
-const isAuthor = session?.profile?.role === 'author' || session?.profile?.role === 'admin';
 const nextPath = `${Astro.url.pathname}${Astro.url.search}`;
+const profileHref = session ? '/me' : `/auth/login?next=${encodeURIComponent(nextPath)}`;
+
+const localeChips = [
+  { value: 'es', label: 'ESP', flag: '🇪🇸' },
+  { value: 'ca', label: 'CAT', flag: '🏴' },
+  { value: 'en', label: 'ENG', flag: '🇬🇧' },
+] as const;
 ---
 
 <!doctype html>
@@ -42,35 +47,36 @@ const nextPath = `${Astro.url.pathname}${Astro.url.search}`;
         <a class="brand" href="/">A poc a poc i amb bona lletra</a>
         <nav>
           <ul>
-            <li><a href="/">{t.nav.home}</a></li>
-            <li><a href="/stories">{t.nav.latestStories}</a></li>
+            <li><a href="/">{t.nav.latestStories}</a></li>
             <li><a href="/authors">{t.nav.authors}</a></li>
             <li><a href="/about">{t.nav.about}</a></li>
-            {session ? (
-              <>
-                {isAuthor && <li><a href="/author">{t.nav.authorSpace}</a></li>}
-                <li class="auth-indicator">{t.nav.signedInAs}: {session.user.email}</li>
-                <li>
-                  <form method="post" action="/api/auth/logout" class="inline-form">
-                    <button type="submit">{t.nav.logout}</button>
-                  </form>
-                </li>
-              </>
-            ) : (
-              <li><a href={`/auth/login?next=${encodeURIComponent(nextPath)}`}>{t.nav.login}</a></li>
-            )}
             <li>
-              <form method="post" action="/api/i18n/locale" class="inline-form locale-form">
+              <form method="post" action="/api/i18n/locale" class="locale-form">
                 <input type="hidden" name="next" value={nextPath} />
-                <label for="locale-selector">{t.nav.language}</label>
-                <select id="locale-selector" name="locale" onchange="this.form.submit()">
-                  {siteConfig.locales.map((option) => (
-                    <option value={option} selected={option === locale}>
-                      {t.localeNames[option]}
-                    </option>
+                <div class="locale-chips">
+                  {localeChips.map((option) => (
+                    <button
+                      type="submit"
+                      name="locale"
+                      value={option.value}
+                      class:list={['chip', { active: option.value === locale }]}
+                    >
+                      <span>{option.flag}</span>
+                      <span>{option.label}</span>
+                    </button>
                   ))}
-                </select>
+                </div>
               </form>
+            </li>
+            <li>
+              <a
+                href={profileHref}
+                class:list={['profile-link', { auth: Boolean(session) }]}
+                aria-label={session ? `${t.nav.signedInAs}: ${session.user.email}` : t.nav.login}
+                title={session ? `${t.nav.signedInAs}: ${session.user.email}` : t.nav.login}
+              >
+                <span class="profile-icon" aria-hidden="true"></span>
+              </a>
             </li>
           </ul>
         </nav>
@@ -111,7 +117,7 @@ const nextPath = `${Astro.url.pathname}${Astro.url.search}`;
     list-style: none;
     display: flex;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-3);
     margin: 0;
     padding: 0;
     font-size: 0.92rem;
@@ -135,28 +141,75 @@ const nextPath = `${Astro.url.pathname}${Astro.url.search}`;
     color: var(--color-accent);
   }
 
-  .auth-indicator {
-    color: var(--color-text-muted);
-    font-size: 0.82rem;
-  }
-
-  .inline-form {
+  .locale-form {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
   }
 
-  .locale-form label {
-    color: var(--color-text-muted);
-    font-size: 0.82rem;
+  .locale-chips {
+    display: inline-flex;
+    gap: 0.35rem;
   }
 
-  .locale-form select {
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border-radius: 999px;
+    padding: 0.2rem 0.45rem;
+    color: var(--color-text-muted);
     background: #fff;
-    font: inherit;
-    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  .chip.active {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-bg-accent) 75%, #fff 25%);
+  }
+
+  .profile-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: #fff;
+  }
+
+  .profile-icon {
+    width: 0.8rem;
+    height: 0.8rem;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .profile-icon::after {
+    content: '';
+    position: absolute;
+    width: 1rem;
+    height: 0.55rem;
+    border: 2px solid currentColor;
+    border-top: none;
+    border-radius: 0 0 999px 999px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -0.75rem;
+  }
+
+  .profile-link.auth {
+    color: #fff;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+    border-color: transparent;
+  }
+
+  .profile-link.auth:hover {
+    color: #fff;
   }
 
   @media (max-width: 860px) {

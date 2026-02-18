@@ -67,9 +67,9 @@ const error = Astro.url.searchParams.get('error');
                 coverAlt={`Portada de ${story.title}`}
                 statusLabel={story.status === 'published' ? t.authorStories.statusPublished : t.authorStories.statusDraft}
                 updatedAtLabel={t.authorStories.lastEdit}
-                updatedAtValue={formatDate(story.updated_at)}
+                updatedAtValue={formatDate(story.updated_at, locale)}
                 publishedAtLabel={t.authorStories.publicationDate}
-                publishedAtValue={story.published_at ? formatDate(story.published_at) : null}
+                publishedAtValue={story.published_at ? formatDate(story.published_at, locale) : null}
               >
                 <Fragment slot="actions">
                   <a href={`/author/stories/${story.id}/edit`}>{t.authorStories.edit}</a>

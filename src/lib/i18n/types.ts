@@ -28,8 +28,10 @@ export interface Messages {
     eyebrow: string;
     latestTitle: string;
     empty: string;
+    author: string;
     publishedAt: string;
     updatedAt: string;
+    excerptFallback: string;
     notFound: string;
   };
   authorsPage: {
@@ -60,6 +62,7 @@ export interface Messages {
     role: string;
     email: string;
     language: string;
+    noAuthorProfile: string;
   };
   authorStories: {
     eyebrow: string;

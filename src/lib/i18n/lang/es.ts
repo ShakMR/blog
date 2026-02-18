@@ -30,8 +30,10 @@ const es: Messages = {
     eyebrow: 'Historias',
     latestTitle: 'Últimas publicaciones',
     empty: 'Aún no hay historias publicadas.',
+    author: 'Autor',
     publishedAt: 'Publicada',
     updatedAt: 'Última edición',
+    excerptFallback: 'Sin extracto disponible.',
     notFound: 'Historia no encontrada.',
   },
   authorsPage: {
@@ -62,6 +64,7 @@ const es: Messages = {
     role: 'Rol',
     email: 'Email',
     language: 'Idioma',
+    noAuthorProfile: 'Tu cuenta está autenticada, pero no tiene perfil de autor.',
   },
   authorStories: {
     eyebrow: 'Autor',

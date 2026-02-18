@@ -4,7 +4,12 @@ import Layout from '../layouts/Layout.astro';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
 import { createServerSupabaseClient } from '../lib/supabase/server';
 import type { StoryRecord } from '../lib/stories/types';
-import { formatDate, toPublicCoverUrl } from '../lib/stories/utils';
+import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../lib/stories/utils';
+
+interface AuthorRow {
+  id: string;
+  slug: string;
+}
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
@@ -15,10 +20,20 @@ const { data: stories = [] } = await supabase
   .select('*')
   .eq('status', 'published')
   .order('published_at', { ascending: false })
-  .limit(10);
+  .limit(24);
 
 const typedStories = stories as StoryRecord[];
-const [featuredStory, ...restStories] = typedStories;
+const authorIds = [...new Set(typedStories.map((story) => story.author_id))];
+let authorById = new Map<string, string>();
+
+if (authorIds.length > 0) {
+  const { data: authors = [] } = await supabase
+    .from('authors')
+    .select('id, slug')
+    .in('id', authorIds);
+
+  authorById = new Map((authors as AuthorRow[]).map((author) => [author.id, author.slug]));
+}
 ---
 
 <Layout title="A poc a poc i amb bona lletra" description={t.home.subtitle}>
@@ -26,48 +41,31 @@ const [featuredStory, ...restStories] = typedStories;
     <p class="eyebrow">{t.home.eyebrow}</p>
     <h1>{t.home.title}</h1>
     <p>{t.home.subtitle}</p>
-    <p class="status">{t.home.status}</p>
   </section>
 
   <section class="container feed">
     <h2>{t.home.latestTitle}</h2>
-    {!featuredStory ? (
+    {typedStories.length === 0 ? (
       <p class="empty-state">{t.home.empty}</p>
     ) : (
-      <>
-        <StoryCard
-          variant="row"
-          title={featuredStory.title}
-          subtitle={featuredStory.subtitle}
-          coverUrl={toPublicCoverUrl(featuredStory.cover_image_path)}
-          coverAlt={`Portada de ${featuredStory.title}`}
-          titleHref={`/stories/${featuredStory.slug}`}
-          statusLabel={t.home.featuredBadge}
-          publishedAtLabel={t.stories.publishedAt}
-          publishedAtValue={formatDate(featuredStory.published_at)}
-          updatedAtLabel={t.stories.updatedAt}
-          updatedAtValue={formatDate(featuredStory.updated_at)}
-        />
-
-        {restStories.length > 0 && (
-          <ul class="feed-list">
-            {restStories.map((story) => (
-              <li>
-                <StoryCard
-                  title={story.title}
-                  subtitle={story.subtitle}
-                  coverAlt={`Portada de ${story.title}`}
-                  titleHref={`/stories/${story.slug}`}
-                  publishedAtLabel={t.stories.publishedAt}
-                  publishedAtValue={formatDate(story.published_at)}
-                  updatedAtLabel={t.stories.updatedAt}
-                  updatedAtValue={formatDate(story.updated_at)}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </>
+      <ul class="stories-grid">
+        {typedStories.map((story) => (
+          <li>
+            <StoryCard
+              title={story.title}
+              subtitle={story.subtitle}
+              excerpt={getStoryExcerpt(story.body_html, 145) || t.stories.excerptFallback}
+              coverUrl={toPublicCoverUrl(story.cover_image_path)}
+              coverAlt={`Portada de ${story.title}`}
+              titleHref={`/stories/${story.slug}`}
+              authorLabel={t.stories.author}
+              authorValue={authorById.get(story.author_id) ? `@${authorById.get(story.author_id)}` : null}
+              publishedAtLabel={t.stories.publishedAt}
+              publishedAtValue={formatDate(story.published_at, locale)}
+            />
+          </li>
+        ))}
+      </ul>
     )}
   </section>
 </Layout>
@@ -109,21 +107,18 @@ const [featuredStory, ...restStories] = typedStories;
     font-size: clamp(1.6rem, 3.5vw, 2.2rem);
   }
 
-  .feed-list {
-    margin: var(--space-4) 0 0;
-    padding: 0;
+  .stories-grid {
     list-style: none;
+    padding: 0;
+    margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 300px));
+    justify-content: center;
     gap: var(--space-4);
   }
 
   .empty-state {
     margin: 0;
     color: var(--color-text-muted);
-  }
-
-  .status {
-    margin-top: var(--space-3);
   }
 </style>

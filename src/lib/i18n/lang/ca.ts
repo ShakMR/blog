@@ -30,8 +30,10 @@ const ca: Messages = {
     eyebrow: 'Històries',
     latestTitle: 'Últimes publicacions',
     empty: 'Encara no hi ha històries publicades.',
+    author: 'Autor',
     publishedAt: 'Publicada',
     updatedAt: 'Darrera edició',
+    excerptFallback: 'Sense extracte disponible.',
     notFound: 'Història no trobada.',
   },
   authorsPage: {
@@ -62,6 +64,7 @@ const ca: Messages = {
     role: 'Rol',
     email: 'Email',
     language: 'Idioma',
+    noAuthorProfile: 'El teu compte està autenticat, però no té perfil d\'autor.',
   },
   authorStories: {
     eyebrow: 'Autor',

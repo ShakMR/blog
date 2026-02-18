@@ -1,3 +1,5 @@
+import type { SupportedLocale } from '../../config/site';
+
 export function slugify(value: string): string {
   return value
     .normalize('NFKD')
@@ -40,7 +42,13 @@ export function toPublicCoverUrl(coverPath: string | null | undefined): string |
   return `${baseUrl}/storage/v1/object/public/story-covers/${coverPath}`;
 }
 
-export function formatDate(value: string | null): string {
+function toIntlLocale(locale: SupportedLocale): string {
+  if (locale === 'en') return 'en-US';
+  if (locale === 'ca') return 'ca-ES';
+  return 'es-ES';
+}
+
+export function formatDate(value: string | null, locale: SupportedLocale = 'es'): string {
   if (!value) {
     return '-';
   }
@@ -50,7 +58,7 @@ export function formatDate(value: string | null): string {
     return '-';
   }
 
-  return new Intl.DateTimeFormat('es-ES', {
+  return new Intl.DateTimeFormat(toIntlLocale(locale), {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);
@@ -58,4 +66,22 @@ export function formatDate(value: string | null): string {
 
 export function sanitizeFilename(filename: string): string {
   return filename.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase();
+}
+
+export function getStoryExcerpt(bodyHtml: string, maxLength = 140): string {
+  const plain = bodyHtml
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!plain) {
+    return '';
+  }
+
+  if (plain.length <= maxLength) {
+    return plain;
+  }
+
+  return `${plain.slice(0, maxLength).trimEnd()}…`;
 }

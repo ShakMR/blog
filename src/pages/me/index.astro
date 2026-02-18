@@ -1,0 +1,129 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import {
+  getAccessTokenFromCookies,
+  getAuthSessionContext,
+  isAuthorRole,
+} from '../../lib/auth/session';
+import { getMessages, resolveRequestLocale } from '../../lib/i18n';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+
+const accessToken = getAccessTokenFromCookies(Astro.cookies);
+if (!accessToken) {
+  return Astro.redirect('/auth/login?next=/me');
+}
+
+const session = await getAuthSessionContext(accessToken);
+if (!session) {
+  return Astro.redirect('/auth/login?error=invalid_credentials&next=/me');
+}
+
+const canAccessAuthorArea = session.profile ? isAuthorRole(session.profile.role) : false;
+---
+
+<Layout title={`${t.nav.authorSpace} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
+  <section class="container me-page">
+    <p class="eyebrow">{t.nav.signedInAs}</p>
+    <h1>{session.user.email}</h1>
+
+    {session.profile ? (
+      <dl class="meta">
+        <div>
+          <dt>{t.authorDashboard.role}</dt>
+          <dd>{session.profile.role}</dd>
+        </div>
+        <div>
+          <dt>{t.authorDashboard.language}</dt>
+          <dd>{session.profile.locale}</dd>
+        </div>
+      </dl>
+    ) : (
+      <p class="muted">{t.authorDashboard.noAuthorProfile}</p>
+    )}
+
+    <div class="actions">
+      {canAccessAuthorArea && <a href="/author">{t.nav.authorSpace}</a>}
+      <form method="post" action="/api/auth/logout">
+        <button type="submit">{t.nav.logout}</button>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<style lang="scss">
+  .me-page {
+    padding-block: var(--space-12);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  h1 {
+    margin-top: var(--space-2);
+    font-family: var(--font-display);
+    overflow-wrap: anywhere;
+  }
+
+  .meta {
+    margin: var(--space-6) 0;
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+
+  .meta div {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    padding: var(--space-4);
+  }
+
+  dt {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+    font-weight: 600;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+  }
+
+  .actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .actions a,
+  .actions button {
+    border-radius: 999px;
+    padding: 0.65rem 1rem;
+    text-decoration: none;
+    font: inherit;
+    cursor: pointer;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+
+  .actions button {
+    color: #fff;
+    border: none;
+    background: #7f3025;
+  }
+</style>

@@ -3,8 +3,13 @@ import StoryCard from '../../components/StoryCard.astro';
 import Layout from '../../layouts/Layout.astro';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
-import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
+import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../../lib/stories/utils';
 import type { StoryRecord } from '../../lib/stories/types';
+
+interface AuthorRow {
+  id: string;
+  slug: string;
+}
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
@@ -15,9 +20,20 @@ const { data: stories = [] } = await supabase
   .select('*')
   .eq('status', 'published')
   .order('published_at', { ascending: false })
-  .limit(30);
+  .limit(48);
 
 const typedStories = stories as StoryRecord[];
+const authorIds = [...new Set(typedStories.map((story) => story.author_id))];
+let authorById = new Map<string, string>();
+
+if (authorIds.length > 0) {
+  const { data: authors = [] } = await supabase
+    .from('authors')
+    .select('id, slug')
+    .in('id', authorIds);
+
+  authorById = new Map((authors as AuthorRow[]).map((author) => [author.id, author.slug]));
+}
 ---
 
 <Layout title={`${t.stories.latestTitle} | A poc a poc i amb bona lletra`} description={t.home.subtitle}>
@@ -34,13 +50,14 @@ const typedStories = stories as StoryRecord[];
             <StoryCard
               title={story.title}
               subtitle={story.subtitle}
+              excerpt={getStoryExcerpt(story.body_html, 145) || t.stories.excerptFallback}
               coverUrl={toPublicCoverUrl(story.cover_image_path)}
               coverAlt={`Portada de ${story.title}`}
               titleHref={`/stories/${story.slug}`}
+              authorLabel={t.stories.author}
+              authorValue={authorById.get(story.author_id) ? `@${authorById.get(story.author_id)}` : null}
               publishedAtLabel={t.stories.publishedAt}
-              publishedAtValue={formatDate(story.published_at)}
-              updatedAtLabel={t.stories.updatedAt}
-              updatedAtValue={formatDate(story.updated_at)}
+              publishedAtValue={formatDate(story.published_at, locale)}
             />
           </li>
         ))}
@@ -65,15 +82,17 @@ const typedStories = stories as StoryRecord[];
 
   h1 {
     margin-top: var(--space-2);
+    margin-bottom: var(--space-6);
     font-family: var(--font-display);
   }
 
   .stories-grid {
     list-style: none;
     padding: 0;
-    margin: var(--space-6) 0 0;
+    margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 300px));
+    justify-content: center;
     gap: var(--space-4);
   }
 </style>

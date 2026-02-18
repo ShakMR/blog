@@ -30,8 +30,10 @@ const en: Messages = {
     eyebrow: 'Stories',
     latestTitle: 'Latest publications',
     empty: 'There are no published stories yet.',
+    author: 'Author',
     publishedAt: 'Published',
     updatedAt: 'Last edit',
+    excerptFallback: 'No excerpt available.',
     notFound: 'Story not found.',
   },
   authorsPage: {
@@ -62,6 +64,7 @@ const en: Messages = {
     role: 'Role',
     email: 'Email',
     language: 'Language',
+    noAuthorProfile: 'Your account is authenticated, but it has no author profile.',
   },
   authorStories: {
     eyebrow: 'Author',

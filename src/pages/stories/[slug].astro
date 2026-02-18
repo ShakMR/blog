@@ -35,8 +35,8 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
         {coverUrl && <img src={coverUrl} alt={`Portada de ${typedStory.title}`} class="cover" loading="lazy" />}
         <h1>{typedStory.title}</h1>
         <p class="subtitle">{typedStory.subtitle}</p>
-        <p class="meta">{t.stories.publishedAt}: {formatDate(typedStory.published_at)}</p>
-        <p class="meta">{t.stories.updatedAt}: {formatDate(typedStory.updated_at)}</p>
+        <p class="meta">{t.stories.publishedAt}: {formatDate(typedStory.published_at, locale)}</p>
+        <p class="meta">{t.stories.updatedAt}: {formatDate(typedStory.updated_at, locale)}</p>
 
         <div class="tags">
           {typedStory.tags.map((tag) => (
