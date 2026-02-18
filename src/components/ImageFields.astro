@@ -1,0 +1,88 @@
+---
+import Label from './Label.astro';
+
+interface Props {
+  name: string;
+  label: string;
+  value: string | null;
+  ctaLabel: string;
+}
+
+const dataPreview = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+const { name, label, value = dataPreview, ctaLabel = 'Click para cambiar la imagen' } = Astro.props;
+---
+
+<div class="image-field">
+  <Label htmlFor={name}>{label}</Label>
+  <input type="file" name={name} id={name} />
+  {value && <div class="image-field-container">
+        <img src={value} alt={label} />
+      <button id="image-field-cta" class="image-field-cta" type="button">{ctaLabel}</button>
+    </div>
+  }
+</div>
+
+<script>
+  const ctaButton = document.getElementById('image-field-cta');
+  if (!ctaButton) {
+    throw new Error('CTA button not found');
+  }
+  ctaButton.addEventListener('click', () => {
+    const fileInput = document.querySelector('.image-field [type="file"]');
+    if (!fileInput) {
+      throw new Error('File input not found');
+    }
+    (fileInput as HTMLInputElement).click();
+  });
+</script>
+
+<style lang="scss">
+  .image-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .image-field [type="file"] {
+    display: none;
+  }
+
+  .image-field img {
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+  }
+
+  .image-field-container {
+    position: relative;
+  }
+
+  .image-field-container:hover {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+
+  .image-field-cta {
+    display: none;
+    font-size: 0.8rem;
+    text-align: center;
+    padding: var(--space-2);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border-radius: var(--radius-sm);
+  }
+
+  .image-field-container:hover .image-field-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>

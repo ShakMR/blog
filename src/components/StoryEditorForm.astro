@@ -1,4 +1,7 @@
 ---
+import ImageField from './ImageFields.astro';
+import Label from './Label.astro';
+
 interface Props {
   action: string;
   submitLabel: string;
@@ -39,34 +42,30 @@ const {
   <input type="hidden" name="existingCoverPath" value={existingCoverPath} />
 
   <div class="fields">
-    <label>Título <input name="title" required maxlength="180" value={title} /></label>
-    <label>Subtítulo <input name="subtitle" maxlength="220" value={subtitle} /></label>
-    <label>Slug (opcional) <input name="slug" placeholder="se-genera-desde-el-titulo" value={slug} /></label>
-    <label>Tags (coma separadas) <input name="tags" placeholder="cuento, fantasia" value={tags} /></label>
-    <label>Fecha publicación <input type="date" name="publishedAt" value={publishedAt} /></label>
-    <label>Portada <input type="file" name="coverImage" accept="image/*" /></label>
+    <Label>Título <input name="title" required maxlength="180" value={title} /></Label>
+    <Label>Subtítulo <input name="subtitle" maxlength="220" value={subtitle} /></Label>
+    <Label>Slug (opcional) <input name="slug" placeholder="se-genera-desde-el-titulo" value={slug} /></Label>
+    <Label>Tags (coma separadas) <input name="tags" placeholder="cuento, fantasia" value={tags} /></Label>
+    <Label>Fecha publicación <input type="date" name="publishedAt" value={publishedAt} /></Label>
   </div>
 
-  {coverUrl && (
-    <figure class="cover-preview">
-      <img src={coverUrl} alt="Portada actual" loading="lazy" />
-      <figcaption>Portada actual</figcaption>
-    </figure>
-  )}
+  <div class="cover-preview">
+    <ImageField name="coverImage" label="Portada" value={coverUrl} ctaLabel="Click para cambiar la imagen" />
+  </div>
 
   <div class="toggles">
-    <label>
+    <Label>
       <input type="hidden" name="commentsEnabled" value="false" />
       <input type="checkbox" name="commentsEnabled" value="true" checked={commentsEnabled} />
       Permitir comentarios
-    </label>
-    <label>
+    </Label>
+    <Label>
       Estado
       <select name="status">
         <option value="draft" selected={status === 'draft'}>Borrador</option>
         <option value="published" selected={status === 'published'}>Publicada</option>
       </select>
-    </label>
+    </Label>
   </div>
 
   <div class="editor-shell">
@@ -155,13 +154,6 @@ const {
     gap: var(--space-4);
   }
 
-  label {
-    display: grid;
-    gap: var(--space-2);
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-  }
-
   input,
   select {
     font: inherit;
@@ -173,10 +165,10 @@ const {
 
   .cover-preview {
     margin: 0;
+    width: 420px;
   }
 
   .cover-preview img {
-    width: min(420px, 100%);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
   }

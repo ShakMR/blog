@@ -1,0 +1,18 @@
+---
+interface Props {
+  htmlFor?: string;
+}
+
+const { htmlFor } = Astro.props;
+---
+
+<label for={htmlFor ?? undefined}><slot /></label>
+
+<style lang="scss">
+  label {
+    display: grid;
+    gap: var(--space-2);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+</style>
