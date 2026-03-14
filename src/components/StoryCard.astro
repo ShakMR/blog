@@ -1,4 +1,5 @@
 ---
+import {isSameDay} from '../lib/dates/isSameDay';
 interface Props {
   title: string;
   subtitle: string;
@@ -34,6 +35,9 @@ const {
 } = Astro.props;
 
 const hasActions = Astro.slots.has('actions');
+const publishedAndEditedSameDay = publishedAtValue && updatedAtValue ? isSameDay(publishedAtValue, updatedAtValue)  : false;
+const shouldShowPublishDate = !!publishedAtLabel && !!publishedAtValue;
+const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAndEditedSameDay
 ---
 
 <article class:list={['story-card', variant]}>
@@ -46,8 +50,8 @@ const hasActions = Astro.slots.has('actions');
 
     <div class="meta-grid">
       {authorLabel && authorValue && <p class="meta">{authorLabel}: {authorValue}</p>}
-      {publishedAtLabel && publishedAtValue && <p class="meta">{publishedAtLabel}: {publishedAtValue}</p>}
-      {updatedAtLabel && updatedAtValue && <p class="meta">{updatedAtLabel}: {updatedAtValue}</p>}
+      {shouldShowPublishDate && <p class="meta">{publishedAtLabel}: {publishedAtValue}</p>}
+      {shouldShowUpdateDate && <p class="meta">{updatedAtLabel}: {updatedAtValue}</p>}
     </div>
 
     {hasActions && (
@@ -68,11 +72,11 @@ const hasActions = Astro.slots.has('actions');
   }
 
   .story-card.column {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 300px;
   }
 
   .story-card.row {
-    grid-template-columns: 150px 1fr;
+    grid-template-columns: 300px 1fr;
   }
 
   .story-card img {
@@ -84,6 +88,9 @@ const hasActions = Astro.slots.has('actions');
 
   .story-content {
     padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    align-items: start;
   }
 
   .story-content h3 {
@@ -110,13 +117,17 @@ const hasActions = Astro.slots.has('actions');
     color: var(--color-text);
     font-size: 0.92rem;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
+  .story-card.column .story-content .meta-grid {
+    margin-top: 1rem;
+  }
+
   .meta-grid {
-    margin-top: var(--space-3);
+    margin-top: auto;
     display: grid;
     gap: 0.2rem;
   }
@@ -161,6 +172,7 @@ const hasActions = Astro.slots.has('actions');
   @media (max-width: 720px) {
     .story-card.row {
       grid-template-columns: 1fr;
+      grid-template-rows: 1fr 300px;
     }
   }
 </style>
