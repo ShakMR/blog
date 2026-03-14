@@ -25,7 +25,7 @@ const profileHref = session ? '/me' : `/auth/login?next=${encodeURIComponent(nex
 
 const localeChips = [
   { value: 'es', label: 'ESP', flag: '🇪🇸' },
-  { value: 'ca', label: 'CAT', flag: '🏴' },
+  { value: 'ca', label: 'CAT', flag: '🇦🇩' },
   { value: 'en', label: 'ENG', flag: '🇬🇧' },
 ] as const;
 ---
@@ -51,21 +51,21 @@ const localeChips = [
             <li><a href="/authors">{t.nav.authors}</a></li>
             <li><a href="/about">{t.nav.about}</a></li>
             <li>
-              <form method="post" action="/api/i18n/locale" class="locale-form">
+              <form id="language-form" method="post" action="/api/i18n/locale" class="locale-form">
                 <input type="hidden" name="next" value={nextPath} />
-                <div class="locale-chips">
+                <button type="submit" name="submit" hidden/>
+                <select id='locale-selector' class="locale-chips" name="locale" onchange="">
                   {localeChips.map((option) => (
-                    <button
-                      type="submit"
-                      name="locale"
+                    <option
                       value={option.value}
                       class:list={['chip', { active: option.value === locale }]}
+                      selected={locale === option.value}
                     >
                       <span>{option.flag}</span>
                       <span>{option.label}</span>
-                    </button>
+                    </option>
                   ))}
-                </div>
+                </select>
               </form>
             </li>
             <li>
@@ -87,6 +87,12 @@ const localeChips = [
     </main>
   </body>
 </html>
+
+<script>
+  document.getElementById('locale-selector')?.addEventListener('change', () => {
+    document.getElementsByName('submit')[0]?.click();
+  })
+</script>
 
 <style lang="scss">
   .site-header {
@@ -111,6 +117,11 @@ const localeChips = [
     text-decoration: none;
     font-size: 1.1rem;
     letter-spacing: 0.02em;
+  }
+  
+  select {
+    background-color: transparent;
+    border: 0;
   }
 
   nav ul {
@@ -187,6 +198,7 @@ const localeChips = [
     border-radius: 999px;
     position: relative;
     display: inline-block;
+    margin-top: -10px;
   }
 
   .profile-icon::after {
@@ -198,7 +210,7 @@ const localeChips = [
     border-top: none;
     border-radius: 0 0 999px 999px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) rotate(180deg);
     bottom: -0.75rem;
   }
 

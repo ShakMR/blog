@@ -7,6 +7,7 @@
   --color-accent-soft: #e6c8af;
   --color-surface: #fffdf8;
   --color-border: #d8cdbf;
+  --color-inactive: rgb(161, 161, 161);
 
   --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
   --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
@@ -23,6 +24,7 @@
   --space-8: 2rem;
   --space-12: 3rem;
 
-  --shadow-soft: 0 10px 30px rgba(42, 35, 29, 0.12);
+  --shadow-soft: 0 0px 10px 0px rgba(42, 35, 29, 0.22);
+  --shadow-soft-higher: 0 5px 10px 5px rgba(42, 35, 29, 0.12);
   --transition-base: 180ms ease;
 }

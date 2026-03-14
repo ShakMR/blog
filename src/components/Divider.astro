@@ -1,0 +1,41 @@
+---
+interface Props {
+    variant: Variants
+}
+
+export enum Variants {
+    LINE = 'LINE',
+    STYLISH = 'STYLISH'
+}
+
+const { variant } = Astro.props;
+---
+
+<div class:list={["divider", variant]}>
+    {variant === Variants.STYLISH && <span class="stylish">~</span>}
+    {variant === Variants.LINE && <hr class="line"/>}
+</div>
+
+<style>
+    .divider {
+        width: 100%;
+        text-align: center;
+        padding-inline: 2rem;
+        padding-block: 0.5rem;
+    }
+
+    .stylish {
+        font-size: 2rem;
+        color: var(--color-inactive);
+        font-weight: bolder;
+    }
+    
+    .line {
+        margin: 0;
+        border: 0;
+        border-top: 1px solid;
+        border-color: var(--color-inactive);
+    }
+</style>
+
+

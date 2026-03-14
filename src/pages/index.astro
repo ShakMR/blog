@@ -1,6 +1,7 @@
 ---
 import StoryCard from '../components/StoryCard.astro';
 import Layout from '../layouts/Layout.astro';
+import Divider, { Variants } from '../components/Divider.astro';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
 import { createServerSupabaseClient } from '../lib/supabase/server';
 import type { StoryRecord } from '../lib/stories/types';
@@ -64,6 +65,7 @@ if (authorIds.length > 0) {
               publishedAtValue={formatDate(story.published_at, locale)}
               variant='row'
             />
+            <Divider variant={Variants.LINE} />
           </li>
         ))}
       </ul>
@@ -116,6 +118,12 @@ if (authorIds.length > 0) {
     grid-template-columns: repeat(auto-fill);
     justify-content: center;
     gap: var(--space-4);
+  }
+
+  .stories-grid li {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   .empty-state {

@@ -1,4 +1,5 @@
 ---
+import {Image} from 'astro:assets';
 import {isSameDay} from '../lib/dates/isSameDay';
 interface Props {
   title: string;
@@ -40,35 +41,58 @@ const shouldShowPublishDate = !!publishedAtLabel && !!publishedAtValue;
 const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAndEditedSameDay
 ---
 
-<article class:list={['story-card', variant]}>
-  {coverUrl && <img src={coverUrl} alt={coverAlt} loading="lazy" />}
-  <div class="story-content">
-    {statusLabel && <p class="pill">{statusLabel}</p>}
-    <h3>{titleHref ? <a href={titleHref}>{title}</a> : title}</h3>
-    <p class="subtitle">{subtitle}</p>
-    {excerpt && <p class="excerpt">{excerpt}</p>}
-
-    <div class="meta-grid">
-      {authorLabel && authorValue && <p class="meta">{authorLabel}: {authorValue}</p>}
-      {shouldShowPublishDate && <p class="meta">{publishedAtLabel}: {publishedAtValue}</p>}
-      {shouldShowUpdateDate && <p class="meta">{updatedAtLabel}: {updatedAtValue}</p>}
-    </div>
-
-    {hasActions && (
-      <div class="actions">
-        <slot name="actions" />
+<a class="title-link" href={titleHref}>
+  <article class:list={['story-card', variant]}>
+    {coverUrl && <Image width={300} height={300} src={coverUrl} alt={coverAlt} loading="lazy" />}
+    <div class="story-content">
+      {statusLabel && <p class="pill">{statusLabel}</p>}
+      <h3>{title}</h3>
+      <p class="subtitle">{subtitle}</p>
+      {excerpt && <p class="excerpt">{excerpt}</p>}
+  
+      <div class="meta-grid">
+        {authorLabel && authorValue && <p class="meta">{authorLabel}: {authorValue}</p>}
+        {shouldShowPublishDate && <p class="meta">{publishedAtLabel}: {publishedAtValue}</p>}
+        {shouldShowUpdateDate && <p class="meta">{updatedAtLabel}: {updatedAtValue}</p>}
       </div>
-    )}
-  </div>
-</article>
+  
+      {hasActions && (
+        <div class="actions">
+          <slot name="actions" />
+        </div>
+      )}
+    </div>
+  </article>
+</a>
 
 <style lang="scss">
+
+  a.title-link {
+    text-decoration: none;
+  }
+
   .story-card {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
     background: var(--color-surface);
     display: grid;
+    box-shadow: var(--shadow-soft);
+    transition: box-shadow var(--transition-base),
+      width var(--transition-base),
+      padding-right var(--transition-base),
+      margin-left var(--transition-base),
+      height var(--transition-base);
+    width: 100%;
+    height: 100%;
+  }
+  
+  .story-card:hover {
+    box-shadow: var(--shadow-soft-higher);
+    width: 101%;
+    height: 101%;
+    padding-right: 1%;
+    margin-left: -0.5%;
   }
 
   .story-card.column {
@@ -98,7 +122,6 @@ const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAn
     font-family: var(--font-display);
     line-height: 1.2;
   }
-
   .story-content h3 a {
     text-decoration: none;
   }
