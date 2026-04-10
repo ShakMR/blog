@@ -20,12 +20,12 @@
 ### Use cases and priority order
 1. ~~UC1: As Author I want to log in in my personal space.~~
 2. UC2: As Author I want to write and publish my short stories in a WYSIWYG way.
-3. UC2.1: As Author I want to add cover image to my story.
-5. UC3: As a User I want to see the newest publication by any author.
-6. UC5: As Admin I want to create new authors (invite email flow).
-7. UC4: As a User I want to see all publication by an Author.
-8. UC6: As a User I want to add comments to stories (anonymous allowed + anti-spam challenge).
-9. UC6.1: As Author I want to disable/enable comments in my story.
+  2.1. UC2.1: As Author I want to add cover image to my story.
+3. UC3: As a User I want to see the newest publication by any author.
+4. UC5: As Admin I want to create new authors (invite email flow).
+5. UC4: As a User I want to see all publication by an Author.
+6. UC6: As a User I want to add comments to stories (anonymous allowed + anti-spam challenge).
+  6.1. UC6.1: As Author I want to disable/enable comments in my story.
 
 ### Confirmed product decisions
 - Anonymous comments are allowed.
