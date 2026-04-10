@@ -1,6 +1,5 @@
 ---
-import {Image} from 'astro:assets';
-import {isSameDay} from '../lib/dates/isSameDay';
+import { isSameDay } from '../lib/dates/isSameDay';
 interface Props {
   title: string;
   subtitle: string;
@@ -11,6 +10,7 @@ interface Props {
   statusLabel?: string;
   authorLabel?: string;
   authorValue?: string | null;
+  authorHref?: string | null;
   publishedAtLabel?: string;
   publishedAtValue?: string | null;
   updatedAtLabel?: string;
@@ -28,6 +28,7 @@ const {
   statusLabel,
   authorLabel,
   authorValue,
+  authorHref,
   publishedAtLabel,
   publishedAtValue,
   updatedAtLabel,
@@ -36,41 +37,41 @@ const {
 } = Astro.props;
 
 const hasActions = Astro.slots.has('actions');
-const publishedAndEditedSameDay = publishedAtValue && updatedAtValue ? isSameDay(publishedAtValue, updatedAtValue)  : false;
+const publishedAndEditedSameDay = publishedAtValue && updatedAtValue ? isSameDay(publishedAtValue, updatedAtValue) : false;
 const shouldShowPublishDate = !!publishedAtLabel && !!publishedAtValue;
-const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAndEditedSameDay
+const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAndEditedSameDay;
 ---
 
-<a class="title-link" href={titleHref}>
-  <article class:list={['story-card', variant]}>
-    {coverUrl && <Image width={300} height={300} src={coverUrl} alt={coverAlt} loading="lazy" />}
-    <div class="story-content">
-      {statusLabel && <p class="pill">{statusLabel}</p>}
-      <h3>{title}</h3>
-      <p class="subtitle">{subtitle}</p>
-      {excerpt && <p class="excerpt">{excerpt}</p>}
-  
-      <div class="meta-grid">
-        {authorLabel && authorValue && <p class="meta">{authorLabel}: {authorValue}</p>}
-        {shouldShowPublishDate && <p class="meta">{publishedAtLabel}: {publishedAtValue}</p>}
-        {shouldShowUpdateDate && <p class="meta">{updatedAtLabel}: {updatedAtValue}</p>}
-      </div>
-  
-      {hasActions && (
-        <div class="actions">
-          <slot name="actions" />
-        </div>
-      )}
+<article class:list={['story-card', variant]}>
+  {coverUrl && <img src={coverUrl} alt={coverAlt} loading="lazy" />}
+  <div class="story-content">
+    {statusLabel && <p class="pill">{statusLabel}</p>}
+    <h3>{titleHref ? <a class="title-link" href={titleHref}>{title}</a> : title}</h3>
+    <p class="subtitle">{subtitle}</p>
+    {excerpt && <p class="excerpt">{excerpt}</p>}
+
+    <div class="meta-grid">
+      {
+        authorLabel && authorValue && (
+          <p class="meta">
+            {authorLabel}:{' '}
+            {authorHref ? <a class="meta-link" href={authorHref}>{authorValue}</a> : authorValue}
+          </p>
+        )
+      }
+      {shouldShowPublishDate && <p class="meta">{publishedAtLabel}: {publishedAtValue}</p>}
+      {shouldShowUpdateDate && <p class="meta">{updatedAtLabel}: {updatedAtValue}</p>}
     </div>
-  </article>
-</a>
+
+    {hasActions && (
+      <div class="actions">
+        <slot name="actions" />
+      </div>
+    )}
+  </div>
+</article>
 
 <style lang="scss">
-
-  a.title-link {
-    text-decoration: none;
-  }
-
   .story-card {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -122,8 +123,14 @@ const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAn
     font-family: var(--font-display);
     line-height: 1.2;
   }
-  .story-content h3 a {
+
+  .title-link {
     text-decoration: none;
+  }
+
+  .meta-link {
+    text-decoration: underline;
+    text-underline-offset: 0.1em;
   }
 
   .subtitle {

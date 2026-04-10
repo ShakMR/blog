@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getAboutAuthorLabel } from '../../lib/authors/utils';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
 import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
@@ -8,6 +9,8 @@ import type { StoryRecord } from '../../lib/stories/types';
 interface AuthorRow {
   id: string;
   slug: string;
+  display_name: string;
+  grammatical_gender: 'masculine' | 'feminine' | 'neutral';
   bio: string;
   avatar_path: string | null;
 }
@@ -32,7 +35,7 @@ const typedStory = story as StoryRecord | null;
 const { data: author } = typedStory
   ? await supabase
       .from('authors')
-      .select('id, slug, bio, avatar_path')
+      .select('id, slug, display_name, grammatical_gender, bio, avatar_path')
       .eq('id', typedStory.author_id)
       .maybeSingle()
   : { data: null };
@@ -63,8 +66,11 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
         </article>
 
         <aside class="author-card">
-          <p class="author-label">{t.stories.aboutAuthor}</p>
-          <p class="author-name">{typedAuthor ? `@${typedAuthor.slug}` : '-'}</p>
+          <p class="author-label">{typedAuthor ? getAboutAuthorLabel(locale, typedAuthor.grammatical_gender) : t.stories.aboutAuthor}</p>
+          <p class="author-name">
+            {typedAuthor ? <a href={`/authors/${typedAuthor.slug}`}>{typedAuthor.display_name || `@${typedAuthor.slug}`}</a> : '-'}
+          </p>
+          {typedAuthor && <p class="author-handle">@{typedAuthor.slug}</p>}
           <p class="author-bio">{typedAuthor?.bio?.trim() ? typedAuthor.bio : t.stories.authorBioFallback}</p>
         </aside>
       </div>
@@ -155,6 +161,16 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
     font-family: var(--font-display);
     font-size: 1.15rem;
     color: var(--color-text);
+  }
+
+  .author-name a {
+    text-decoration: none;
+  }
+
+  .author-handle {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
   }
 
   .author-bio {

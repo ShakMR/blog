@@ -2,6 +2,7 @@
 import StoryCard from '../components/StoryCard.astro';
 import Layout from '../layouts/Layout.astro';
 import Divider, { Variants } from '../components/Divider.astro';
+import { getAuthorNoun } from '../lib/authors/utils';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
 import { createServerSupabaseClient } from '../lib/supabase/server';
 import type { StoryRecord } from '../lib/stories/types';
@@ -10,6 +11,8 @@ import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../lib/stories/ut
 interface AuthorRow {
   id: string;
   slug: string;
+  display_name: string;
+  grammatical_gender: 'masculine' | 'feminine' | 'neutral';
 }
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
@@ -25,15 +28,15 @@ const { data: stories = [] } = await supabase
 
 const typedStories = stories as StoryRecord[];
 const authorIds = [...new Set(typedStories.map((story) => story.author_id))];
-let authorById = new Map<string, string>();
+let authorById = new Map<string, AuthorRow>();
 
 if (authorIds.length > 0) {
   const { data: authors = [] } = await supabase
     .from('authors')
-    .select('id, slug')
+    .select('id, slug, display_name, grammatical_gender')
     .in('id', authorIds);
 
-  authorById = new Map((authors as AuthorRow[]).map((author) => [author.id, author.slug]));
+  authorById = new Map((authors as AuthorRow[]).map((author) => [author.id, author]));
 }
 ---
 
@@ -64,6 +67,11 @@ if (authorIds.length > 0) {
       <ul class="stories-grid">
         {typedStories.map((story) => (
           <li>
+            {
+              (() => {
+                const author = authorById.get(story.author_id);
+                const authorName = author?.display_name?.trim() || (author ? `@${author.slug}` : null);
+                return (
             <StoryCard
               title={story.title}
               subtitle={story.subtitle}
@@ -71,12 +79,16 @@ if (authorIds.length > 0) {
               coverUrl={toPublicCoverUrl(story.cover_image_path)}
               coverAlt={`Portada de ${story.title}`}
               titleHref={`/stories/${story.slug}`}
-              authorLabel={t.stories.author}
-              authorValue={authorById.get(story.author_id) ? `@${authorById.get(story.author_id)}` : null}
+              authorLabel={author ? getAuthorNoun(locale, author.grammatical_gender) : t.stories.author}
+              authorValue={authorName}
+              authorHref={author ? `/authors/${author.slug}` : null}
               publishedAtLabel={t.stories.publishedAt}
               publishedAtValue={formatDate(story.published_at, locale)}
               variant='row'
             />
+                );
+              })()
+            }
             <Divider variant={Variants.LINE} />
           </li>
         ))}
