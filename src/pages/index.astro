@@ -39,9 +39,21 @@ if (authorIds.length > 0) {
 
 <Layout title="A poc a poc i amb bona lletra" description={t.home.subtitle}>
   <section class="hero container">
-    <p class="eyebrow">{t.home.eyebrow}</p>
-    <h1>{t.home.title}</h1>
-    <p>{t.home.subtitle}</p>
+    <div class="hero-copy">
+      <p class="eyebrow">{t.home.eyebrow}</p>
+      <h1>{t.home.title}</h1>
+      <p>{t.home.subtitle}</p>
+    </div>
+    <div class="hero-mark">
+      <img
+        src="/img/brand/logo-300.png"
+        alt="Logotipo de A poc a poc i amb bona lletra"
+        width="220"
+        height="220"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
   </section>
 
   <section class="container feed">
@@ -76,6 +88,10 @@ if (authorIds.length > 0) {
 <style lang="scss">
   .hero {
     padding-block: var(--space-12) var(--space-8);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-6);
   }
 
   .eyebrow {
@@ -98,6 +114,20 @@ if (authorIds.length > 0) {
   p {
     max-width: 56ch;
     color: var(--color-text-muted);
+  }
+
+  .hero-mark {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .hero-mark img {
+    width: min(220px, 32vw);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 999px;
+    object-fit: cover;
+    box-shadow: 0 20px 40px rgba(73, 37, 18, 0.12);
   }
 
   .feed {
@@ -129,5 +159,19 @@ if (authorIds.length > 0) {
   .empty-state {
     margin: 0;
     color: var(--color-text-muted);
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-mark {
+      justify-content: flex-start;
+    }
+
+    .hero-mark img {
+      width: min(180px, 48vw);
+    }
   }
 </style>
