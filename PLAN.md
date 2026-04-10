@@ -7,7 +7,7 @@
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
 - In progress on current branch:
-  - UC2 / UC2.1 / UC2.2
+  - UC2 / UC2.1
   - UC3
   - UC4 partially advanced as supporting work because public author pages were needed during VQA
 - Still pending as standalone milestones:
@@ -21,11 +21,11 @@
 1. ~~UC1: As Author I want to log in in my personal space.~~
 2. UC2: As Author I want to write and publish my short stories in a WYSIWYG way.
 3. UC2.1: As Author I want to add cover image to my story.
-4. UC2.2: As Author I want to disable/enable comments in my story.
 5. UC3: As a User I want to see the newest publication by any author.
 6. UC5: As Admin I want to create new authors (invite email flow).
 7. UC4: As a User I want to see all publication by an Author.
 8. UC6: As a User I want to add comments to stories (anonymous allowed + anti-spam challenge).
+9. UC6.1: As Author I want to disable/enable comments in my story.
 
 ### Confirmed product decisions
 - Anonymous comments are allowed.
@@ -143,19 +143,17 @@ Acceptance:
 - Invited user can join and become `author`.
 - Non-admin cannot access invite flow.
 
-## Phase 3 - UC2/2.1/2.2 Author Editor + Publish (4-6 days)
+## Phase 3 - UC2/2.1 Author Editor + Publish (4-6 days)
 Goals:
 - ~~Tiptap editor with story metadata inputs.~~
 - ~~Draft save, publish/unpublish, edit/delete.~~
 - ~~Cover image upload to Supabase Storage.~~
-- ~~Comments enable/disable per story.~~
 - ~~Last edited stamp tracking.~~
 
 Implemented on current branch:
 - WYSIWYG story editor with create/edit/save flow.
 - Draft + publish states with direct draft link and `noindex,nofollow`.
 - Cover picker UI and Supabase Storage upload path.
-- Comment enable/disable toggle at story level.
 - Story editor refactor into reusable field components.
 - Homepage logo integration using imported legacy assets.
 
@@ -194,6 +192,7 @@ Note:
 ## Phase 6 - UC6 Anonymous Comments + Anti-Spam (2-3 days)
 Goals:
 - Comment form for anonymous users.
+- Comments enable/disable per story.
 - Anti-spam without internet dependency:
   - honeypot field
   - time-to-submit threshold
