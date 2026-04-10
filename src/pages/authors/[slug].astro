@@ -1,36 +1,23 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import StoryCard from '../../components/StoryCard.astro';
+import { getPublicAuthorBySlug } from '../../lib/authors/public';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
 import type { StoryRecord } from '../../lib/stories/types';
 import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../../lib/stories/utils';
 import { getAuthorNoun } from '../../lib/authors/utils';
 
-interface AuthorRow {
-  id: string;
-  slug: string;
-  display_name: string;
-  bio: string;
-  grammatical_gender: 'masculine' | 'feminine' | 'neutral';
-}
-
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
 
 const slug = Astro.params.slug;
-const supabase = createServerSupabaseClient();
-const { data: author } = await supabase
-  .from('authors')
-  .select('id, slug, display_name, bio, grammatical_gender')
-  .eq('slug', slug)
-  .maybeSingle();
+const typedAuthor = slug ? await getPublicAuthorBySlug(slug) : null;
 
-if (!author) {
+if (!typedAuthor) {
   Astro.response.status = 404;
 }
-
-const typedAuthor = author as AuthorRow | null;
+const supabase = createServerSupabaseClient();
 const { data: stories = [] } = typedAuthor
   ? await supabase
       .from('stories')

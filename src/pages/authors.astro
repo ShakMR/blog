@@ -1,26 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getPublicAuthors } from '../lib/authors/public';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
-import { createServerSupabaseClient } from '../lib/supabase/server';
-
-interface AuthorRow {
-  id: string;
-  slug: string;
-  display_name: string;
-  bio: string;
-  grammatical_gender: 'masculine' | 'feminine' | 'neutral';
-}
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
-
-const supabase = createServerSupabaseClient();
-const { data } = await supabase
-  .from('authors')
-  .select('id, slug, display_name, bio, grammatical_gender')
-  .order('display_name', { ascending: true });
-
-const typedAuthors = (data ?? []) as AuthorRow[];
+const typedAuthors = await getPublicAuthors();
 ---
 
 <Layout title={`${t.authorsPage.title} | A poc a poc i amb bona lletra`} description={t.authorsPage.title}>

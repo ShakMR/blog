@@ -1,19 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getPublicAuthorsByIds } from '../../lib/authors/public';
 import { getAboutAuthorLabel } from '../../lib/authors/utils';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
 import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
 import type { StoryRecord } from '../../lib/stories/types';
-
-interface AuthorRow {
-  id: string;
-  slug: string;
-  display_name: string;
-  grammatical_gender: 'masculine' | 'feminine' | 'neutral';
-  bio: string;
-  avatar_path: string | null;
-}
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
@@ -32,14 +24,7 @@ if (!story) {
 }
 
 const typedStory = story as StoryRecord | null;
-const { data: author } = typedStory
-  ? await supabase
-      .from('authors')
-      .select('id, slug, display_name, grammatical_gender, bio, avatar_path')
-      .eq('id', typedStory.author_id)
-      .maybeSingle()
-  : { data: null };
-const typedAuthor = author as AuthorRow | null;
+const typedAuthor = typedStory ? (await getPublicAuthorsByIds([typedStory.author_id])).get(typedStory.author_id) ?? null : null;
 const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : null;
 ---
 
