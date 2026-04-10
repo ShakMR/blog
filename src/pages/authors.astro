@@ -15,12 +15,12 @@ const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
 
 const supabase = createServerSupabaseClient();
-const { data: authors = [] } = await supabase
+const { data } = await supabase
   .from('authors')
   .select('id, slug, display_name, bio, grammatical_gender')
   .order('display_name', { ascending: true });
 
-const typedAuthors = authors as AuthorRow[];
+const typedAuthors = (data ?? []) as AuthorRow[];
 ---
 
 <Layout title={`${t.authorsPage.title} | A poc a poc i amb bona lletra`} description={t.authorsPage.title}>

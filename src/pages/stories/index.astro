@@ -30,12 +30,13 @@ const authorIds = [...new Set(typedStories.map((story) => story.author_id))];
 let authorById = new Map<string, AuthorRow>();
 
 if (authorIds.length > 0) {
-  const { data: authors = [] } = await supabase
+  const { data } = await supabase
     .from('authors')
     .select('id, slug, display_name, grammatical_gender')
     .in('id', authorIds);
 
-  authorById = new Map((authors as AuthorRow[]).map((author) => [author.id, author]));
+  const authors = (data ?? []) as AuthorRow[];
+  authorById = new Map(authors.map((author) => [author.id, author]));
 }
 ---
 
