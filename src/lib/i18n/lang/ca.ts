@@ -31,9 +31,11 @@ const ca: Messages = {
     latestTitle: 'Últimes publicacions',
     empty: 'Encara no hi ha històries publicades.',
     author: 'Autor',
+    aboutAuthor: 'Sobre l\'autora',
     publishedAt: 'Publicada',
     updatedAt: 'Darrera edició',
     excerptFallback: 'Sense extracte disponible.',
+    authorBioFallback: 'Aviat hi haurà més informació sobre aquesta autora.',
     notFound: 'Història no trobada.',
   },
   authorsPage: {

@@ -31,9 +31,11 @@ const en: Messages = {
     latestTitle: 'Latest publications',
     empty: 'There are no published stories yet.',
     author: 'Author',
+    aboutAuthor: 'About the author',
     publishedAt: 'Published',
     updatedAt: 'Last edit',
     excerptFallback: 'No excerpt available.',
+    authorBioFallback: 'More information about this author will be available soon.',
     notFound: 'Story not found.',
   },
   authorsPage: {

@@ -5,6 +5,13 @@ import { createServerSupabaseClient } from '../../lib/supabase/server';
 import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
 import type { StoryRecord } from '../../lib/stories/types';
 
+interface AuthorRow {
+  id: string;
+  slug: string;
+  bio: string;
+  avatar_path: string | null;
+}
+
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
 
@@ -22,6 +29,14 @@ if (!story) {
 }
 
 const typedStory = story as StoryRecord | null;
+const { data: author } = typedStory
+  ? await supabase
+      .from('authors')
+      .select('id, slug, bio, avatar_path')
+      .eq('id', typedStory.author_id)
+      .maybeSingle()
+  : { data: null };
+const typedAuthor = author as AuthorRow | null;
 const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : null;
 ---
 
@@ -31,21 +46,28 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
 >
   <section class="container story-page">
     {typedStory ? (
-      <article>
-        {coverUrl && <img src={coverUrl} alt={`Portada de ${typedStory.title}`} class="cover" loading="lazy" />}
-        <h1>{typedStory.title}</h1>
-        <p class="subtitle">{typedStory.subtitle}</p>
-        <p class="meta">{t.stories.publishedAt}: {formatDate(typedStory.published_at, locale)}</p>
-        <p class="meta">{t.stories.updatedAt}: {formatDate(typedStory.updated_at, locale)}</p>
+      <div class="story-layout">
+        <article>
+          {coverUrl && <img src={coverUrl} alt={`Portada de ${typedStory.title}`} class="cover" loading="lazy" />}
+          <h1>{typedStory.title}</h1>
+          <p class="subtitle">{typedStory.subtitle}</p>
+          <p class="meta">{t.stories.publishedAt}: {formatDate(typedStory.published_at, locale)}</p>
 
-        <div class="tags">
-          {typedStory.tags.map((tag) => (
-            <span>{tag}</span>
-          ))}
-        </div>
+          <div class="tags">
+            {typedStory.tags.map((tag) => (
+              <span>{tag}</span>
+            ))}
+          </div>
 
-        <div class="content" set:html={typedStory.body_html}></div>
-      </article>
+          <div class="content" set:html={typedStory.body_html}></div>
+        </article>
+
+        <aside class="author-card">
+          <p class="author-label">{t.stories.aboutAuthor}</p>
+          <p class="author-name">{typedAuthor ? `@${typedAuthor.slug}` : '-'}</p>
+          <p class="author-bio">{typedAuthor?.bio?.trim() ? typedAuthor.bio : t.stories.authorBioFallback}</p>
+        </aside>
+      </div>
     ) : (
       <p>{t.stories.notFound}</p>
     )}
@@ -55,6 +77,13 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
 <style lang="scss">
   .story-page {
     padding-block: var(--space-12);
+  }
+
+  .story-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 18rem;
+    gap: var(--space-8);
+    align-items: start;
   }
 
   article {
@@ -101,5 +130,47 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
 
   .content :global(p) {
     line-height: 1.8;
+  }
+
+  .author-card {
+    position: sticky;
+    top: 5.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: var(--space-4);
+  }
+
+  .author-label {
+    margin: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .author-name {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--color-text);
+  }
+
+  .author-bio {
+    margin: var(--space-3) 0 0;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 900px) {
+    .story-layout {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+
+    .author-card {
+      position: static;
+    }
   }
 </style>

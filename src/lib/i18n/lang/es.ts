@@ -31,9 +31,11 @@ const es: Messages = {
     latestTitle: 'Últimas publicaciones',
     empty: 'Aún no hay historias publicadas.',
     author: 'Autor',
+    aboutAuthor: 'Sobre la autora',
     publishedAt: 'Publicada',
     updatedAt: 'Última edición',
     excerptFallback: 'Sin extracto disponible.',
+    authorBioFallback: 'Próximamente habrá más información sobre esta autora.',
     notFound: 'Historia no encontrada.',
   },
   authorsPage: {

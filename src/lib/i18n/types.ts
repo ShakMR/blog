@@ -29,9 +29,11 @@ export interface Messages {
     latestTitle: string;
     empty: string;
     author: string;
+    aboutAuthor: string;
     publishedAt: string;
     updatedAt: string;
     excerptFallback: string;
+    authorBioFallback: string;
     notFound: string;
   };
   authorsPage: {
