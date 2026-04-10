@@ -1,19 +1,13 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getMessages } from '../../lib/i18n';
+import { LOCALE_COOKIE } from '../../lib/i18n';
 
-const t = getMessages('es');
+Astro.cookies.set(LOCALE_COOKIE, 'es', {
+  httpOnly: false,
+  path: '/',
+  sameSite: 'lax',
+  secure: import.meta.env.PROD,
+  maxAge: 60 * 60 * 24 * 365,
+});
+
+return Astro.redirect('/');
 ---
-
-<Layout title="Inicio | A poc a poc i amb bona lletra" description={t.home.subtitle}>
-  <section class="container locale-page">
-    <h1>{t.home.title}</h1>
-    <p>{t.home.subtitle}</p>
-  </section>
-</Layout>
-
-<style>
-  .locale-page {
-    padding-block: 4rem;
-  }
-</style>

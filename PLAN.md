@@ -1,16 +1,31 @@
 # A poc a poc i amb bona lletra - Implementation Plan
 
+## Status Snapshot
+
+- Active branch: `uc2-uc3-editor-and-feed`
+- Merged to `primary`:
+  - ~~Phase 0 - Infra Bootstrap~~
+  - ~~Phase 1 - UC1 Author Login~~
+- In progress on current branch:
+  - UC2 / UC2.1
+  - UC3
+  - UC4 partially advanced as supporting work because public author pages were needed during VQA
+- Still pending as standalone milestones:
+  - UC5
+  - UC6
+  - hardening / release prep
+
 ## 1) Product Scope (v1)
 
 ### Use cases and priority order
-1. UC1: As Author I want to log in in my personal space.
-2. UC5: As Admin I want to create new authors (invite email flow).
-3. UC2: As Author I want to write and publish my short stories in a WYSIWYG way.
-4. UC2.1: As Author I want to add cover image to my story.
-5. UC2.2: As Author I want to disable/enable comments in my story.
-6. UC3: As a User I want to see the newest publication by any author.
-7. UC4: As a User I want to see all publication by an Author.
-8. UC6: As a User I want to add comments to stories (anonymous allowed + anti-spam challenge).
+1. ~~UC1: As Author I want to log in in my personal space.~~
+2. UC2: As Author I want to write and publish my short stories in a WYSIWYG way.
+  2.1. UC2.1: As Author I want to add cover image to my story.
+3. UC3: As a User I want to see the newest publication by any author.
+4. UC5: As Admin I want to create new authors (invite email flow).
+5. UC4: As a User I want to see all publication by an Author.
+6. UC6: As a User I want to add comments to stories (anonymous allowed + anti-spam challenge).
+  6.1. UC6.1: As Author I want to disable/enable comments in my story.
 
 ### Confirmed product decisions
 - Anonymous comments are allowed.
@@ -75,13 +90,12 @@ RLS policy goals:
 Base branch: `primary`.
 
 Planned branches:
-1. `infra-bootstrap`
-2. `uc1-author-login`
-3. `uc5-admin-create-authors`
-4. `uc2-author-editor-publish`
-5. `uc3-newest-publications`
-6. `uc4-publications-by-author`
-7. `uc6-comments-anon-antispam`
+1. ~~`infra-bootstrap`~~
+2. ~~`uc1-author-login`~~
+3. `uc2-uc3-editor-and-feed`
+4. `uc5-admin-create-authors`
+5. `uc4-publications-by-author`
+6. `uc6-comments-anon-antispam`
 
 Rules:
 - One branch per use case, one PR per branch.
@@ -91,12 +105,12 @@ Rules:
 
 ## 6) Phased Plan, Estimates, and Acceptance Criteria
 
-## Phase 0 - Infra Bootstrap (2-3 days)
+## ~~Phase 0 - Infra Bootstrap~~ (2-3 days)
 Goals:
-- Initialize Astro + TS + SASS project.
-- Integrate Supabase local workflow.
-- Set env, migration, seed, lint, format, test scaffolding.
-- Define base app architecture and i18n skeleton.
+- ~~Initialize Astro + TS + SASS project.~~
+- ~~Integrate Supabase local workflow.~~
+- ~~Set env, migration, seed, lint, format, test scaffolding.~~
+- ~~Define base app architecture and i18n skeleton.~~
 
 Deliverables:
 - Running local app.
@@ -109,10 +123,10 @@ Acceptance:
 - App can connect to local Supabase.
 - Basic test command passes.
 
-## Phase 1 - UC1 Author Login (1 day)
+## ~~Phase 1 - UC1 Author Login~~ (1 day)
 Goals:
-- Implement login/logout/session management.
-- Build protected author space shell.
+- ~~Implement login/logout/session management.~~
+- ~~Build protected author space shell.~~
 
 Acceptance:
 - Author can log in and access protected route.
@@ -129,13 +143,19 @@ Acceptance:
 - Invited user can join and become `author`.
 - Non-admin cannot access invite flow.
 
-## Phase 3 - UC2/2.1/2.2 Author Editor + Publish (4-6 days)
+## Phase 3 - UC2/2.1 Author Editor + Publish (4-6 days)
 Goals:
-- Tiptap editor with story metadata inputs.
-- Draft save, publish/unpublish, edit/delete.
-- Cover image upload to Supabase Storage.
-- Comments enable/disable per story.
-- Last edited stamp tracking.
+- ~~Tiptap editor with story metadata inputs.~~
+- ~~Draft save, publish/unpublish, edit/delete.~~
+- ~~Cover image upload to Supabase Storage.~~
+- ~~Last edited stamp tracking.~~
+
+Implemented on current branch:
+- WYSIWYG story editor with create/edit/save flow.
+- Draft + publish states with direct draft link and `noindex,nofollow`.
+- Cover picker UI and Supabase Storage upload path.
+- Story editor refactor into reusable field components.
+- Homepage logo integration using imported legacy assets.
 
 Acceptance:
 - Author can create, edit, and publish stories.
@@ -145,22 +165,34 @@ Acceptance:
 
 ## Phase 4 - UC3 Newest Publications (1 day)
 Goals:
-- Public newest stories feed.
+- ~~Public newest stories feed.~~
 
 Acceptance:
-- Users see newest published stories globally.
-- Correct ordering and pagination.
+- ~~Users see newest published stories globally.~~
+- Pagination still pending if needed; ordering is implemented.
+
+Implemented on current branch:
+- Homepage is now the primary newest-publications feed.
+- Public `/stories` page shows newest published stories.
+- Shared public story card component for listing surfaces.
+- Public cards show title, subtitle, excerpt, author, and publication date.
 
 ## Phase 5 - UC4 Stories by Author (0.5-1 day)
 Goals:
-- Public author page with all published stories.
+- ~~Public author page with all published stories.~~
 
 Acceptance:
-- Users can browse all stories by author slug/profile.
+- ~~Users can browse all stories by author slug/profile.~~
+
+Note:
+- This was advanced early during UC2/UC3 VQA because author links and public author context were required.
+- Public author index and author detail pages are implemented on the current branch.
+- Author labels are now gender-aware, backed by migration `20260410170000_public_author_profiles.sql`.
 
 ## Phase 6 - UC6 Anonymous Comments + Anti-Spam (2-3 days)
 Goals:
 - Comment form for anonymous users.
+- Comments enable/disable per story.
 - Anti-spam without internet dependency:
   - honeypot field
   - time-to-submit threshold
@@ -227,3 +259,29 @@ For each use case branch:
 7. Checkout `primary` and start next branch.
 
 This plan is the baseline and can be refined after each UC based on VQA feedback.
+
+## VQA Feedback Already Incorporated On `uc2-uc3-editor-and-feed`
+
+- ~~Unify repeated story-card layouts instead of duplicating homepage and author-panel markup.~~
+- ~~Reflect signed-in state in the header UI across public pages.~~
+- ~~Use translation files consistently instead of hardcoded Spanish strings.~~
+- ~~Add persistent language selector for UI locale.~~
+- ~~Remove redundant homepage CTA to latest stories.~~
+- ~~Fix missing cover picker CTA when no cover exists yet.~~
+- ~~Simplify nav: remove explicit Home button, use logo as home.~~
+- ~~Replace Login text with profile icon entry point.~~
+- ~~Use compact locale selector chips instead of verbose label.~~
+- ~~Redesign public story cards to show excerpt, author, and publication date.~~
+- ~~Import legacy logo assets and integrate the brand mark into header and homepage.~~
+- ~~Restore author information on public surfaces with schema-compatible fallback.~~
+- ~~Add author sidebar on story detail and remove redundant public last-edit date.~~
+- ~~Link author name to public author profile.~~
+- ~~Add public author pages and gender-aware author labels.~~
+
+## Immediate Next Step
+
+- Finish VQA on `uc2-uc3-editor-and-feed`.
+- Merge to `primary`.
+- Return to `primary` and start the next standalone branch:
+  - `uc5-admin-create-authors` if priority remains unchanged
+  - or reorder again before starting

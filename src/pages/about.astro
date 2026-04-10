@@ -1,13 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getMessages, resolveRequestLocale } from '../lib/i18n';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
 ---
 
-<Layout title="Sobre el proyecto | A poc a poc i amb bona lletra" description="Estado del proyecto y stack.">
+<Layout title={`${t.aboutPage.title} | A poc a poc i amb bona lletra`} description={t.aboutPage.description}>
   <section class="container page-placeholder">
-    <h1>Sobre el proyecto</h1>
-    <p>
-      Stack base: Astro + TypeScript + SASS, Supabase como backend y Vercel para despliegue.
-    </p>
+    <h1>{t.aboutPage.title}</h1>
+    <p>{t.aboutPage.description}</p>
   </section>
 </Layout>
 

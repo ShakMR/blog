@@ -1,0 +1,89 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getMessages, resolveRequestLocale } from '../../../lib/i18n';
+import { createServerSupabaseClient } from '../../../lib/supabase/server';
+import { formatDate, toPublicCoverUrl } from '../../../lib/stories/utils';
+import type { StoryRecord } from '../../../lib/stories/types';
+import { ACCESS_TOKEN_COOKIE } from '../../../lib/auth/session';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+
+const token = Astro.params.token;
+const authToken = Astro.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+const supabase = createServerSupabaseClient({ accessToken: authToken });
+const { data: story } = await supabase
+  .from('stories')
+  .select('*')
+  .eq('draft_access_token', token)
+  .maybeSingle();
+
+if (!story || story.status !== 'draft') {
+  Astro.response.status = 404;
+}
+
+const typedStory = story as StoryRecord | null;
+const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : null;
+---
+
+<Layout
+  title={typedStory ? `${t.draft.titlePrefix}: ${typedStory.title}` : t.draft.notFound}
+  description={typedStory?.subtitle ?? t.draft.notFound}
+  robots="noindex,nofollow"
+>
+  <section class="container story-page">
+    {typedStory ? (
+      <article>
+        <p class="eyebrow">{t.draft.privateEyebrow}</p>
+        {coverUrl && <img src={coverUrl} alt={`Portada de ${typedStory.title}`} class="cover" loading="lazy" />}
+        <h1>{typedStory.title}</h1>
+        <p class="subtitle">{typedStory.subtitle}</p>
+        <p class="meta">{t.draft.lastEdit}: {formatDate(typedStory.updated_at, locale)}</p>
+        <div class="content" set:html={typedStory.body_html}></div>
+      </article>
+    ) : (
+      <p>{t.draft.notFound}</p>
+    )}
+  </section>
+</Layout>
+
+<style lang="scss">
+  .story-page {
+    padding-block: var(--space-12);
+  }
+
+  .eyebrow {
+    margin: 0 0 var(--space-2);
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  article {
+    max-width: 720px;
+  }
+
+  .cover {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    margin-bottom: var(--space-6);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.3rem);
+  }
+
+  .subtitle {
+    color: var(--color-text-muted);
+  }
+
+  .meta {
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
+  }
+</style>

@@ -1,5 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getMessages, resolveRequestLocale } from '../../lib/i18n';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
 
 const error = Astro.url.searchParams.get('error');
 const status = Astro.url.searchParams.get('status');
@@ -7,23 +11,20 @@ const next = Astro.url.searchParams.get('next') ?? '/author';
 
 const errorMessage =
   error === 'missing_credentials'
-    ? 'Email y contraseña son obligatorios.'
+    ? t.auth.errorMissing
     : error === 'invalid_credentials'
-      ? 'No se pudo iniciar sesión. Revisa tus credenciales.'
+      ? t.auth.errorInvalid
       : null;
 
-const statusMessage =
-  status === 'logged_out'
-    ? 'Sesión cerrada correctamente.'
-    : null;
+const statusMessage = status === 'logged_out' ? t.auth.statusLoggedOut : null;
 ---
 
-<Layout title="Acceso autor | A poc a poc i amb bona lletra" description="Acceso para autores y administración.">
+<Layout title={`${t.auth.title} | A poc a poc i amb bona lletra`} description={t.auth.subtitle}>
   <section class="container login-page">
     <div class="login-card">
-      <p class="eyebrow">Área privada</p>
-      <h1>Acceso de autor</h1>
-      <p>Inicia sesión para entrar a tu espacio personal de edición.</p>
+      <p class="eyebrow">{t.auth.privateArea}</p>
+      <h1>{t.auth.title}</h1>
+      <p>{t.auth.subtitle}</p>
 
       {errorMessage && <p class="message error">{errorMessage}</p>}
       {statusMessage && <p class="message ok">{statusMessage}</p>}
@@ -31,13 +32,13 @@ const statusMessage =
       <form method="post" action="/api/auth/login" class="login-form">
         <input type="hidden" name="next" value={next} />
 
-        <label for="email">Email</label>
+        <label for="email">{t.auth.email}</label>
         <input id="email" name="email" type="email" required autocomplete="email" />
 
-        <label for="password">Contraseña</label>
+        <label for="password">{t.auth.password}</label>
         <input id="password" name="password" type="password" required autocomplete="current-password" />
 
-        <button type="submit">Entrar</button>
+        <button type="submit">{t.auth.submit}</button>
       </form>
     </div>
   </section>

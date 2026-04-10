@@ -1,0 +1,124 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import { getPublicAuthorBySlug } from '../../lib/authors/public';
+import { getMessages, resolveRequestLocale } from '../../lib/i18n';
+import { createServerSupabaseClient } from '../../lib/supabase/server';
+import type { StoryRecord } from '../../lib/stories/types';
+import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../../lib/stories/utils';
+import { getAuthorNoun } from '../../lib/authors/utils';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+
+const slug = Astro.params.slug;
+const typedAuthor = slug ? await getPublicAuthorBySlug(slug) : null;
+
+if (!typedAuthor) {
+  Astro.response.status = 404;
+}
+const supabase = createServerSupabaseClient();
+const { data: stories = [] } = typedAuthor
+  ? await supabase
+      .from('stories')
+      .select('*')
+      .eq('author_id', typedAuthor.id)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+  : { data: [] };
+
+const typedStories = stories as StoryRecord[];
+---
+
+<Layout
+  title={typedAuthor ? `${typedAuthor.display_name || `@${typedAuthor.slug}`} | A poc a poc i amb bona lletra` : t.stories.notFound}
+  description={typedAuthor?.bio || t.stories.authorBioFallback}
+>
+  <section class="container author-profile-page">
+    {typedAuthor ? (
+      <>
+        <p class="eyebrow">{getAuthorNoun(locale, typedAuthor.grammatical_gender)}</p>
+        <h1>{typedAuthor.display_name || `@${typedAuthor.slug}`}</h1>
+        <p class="handle">@{typedAuthor.slug}</p>
+        <p class="bio">{typedAuthor.bio.trim() || t.stories.authorBioFallback}</p>
+
+        <section class="stories-section">
+          <h2>{t.stories.latestTitle}</h2>
+          {typedStories.length === 0 ? (
+            <p>{t.stories.empty}</p>
+          ) : (
+            <ul class="stories-grid">
+              {typedStories.map((story) => (
+                <li>
+                  <StoryCard
+                    title={story.title}
+                    subtitle={story.subtitle}
+                    excerpt={getStoryExcerpt(story.body_html, 145) || t.stories.excerptFallback}
+                    coverUrl={toPublicCoverUrl(story.cover_image_path)}
+                    coverAlt={`Portada de ${story.title}`}
+                    titleHref={`/stories/${story.slug}`}
+                    publishedAtLabel={t.stories.publishedAt}
+                    publishedAtValue={formatDate(story.published_at, locale)}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </>
+    ) : (
+      <p>{t.stories.notFound}</p>
+    )}
+  </section>
+</Layout>
+
+<style lang="scss">
+  .author-profile-page {
+    padding-block: var(--space-12);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-display);
+  }
+
+  .handle {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-muted);
+  }
+
+  .bio {
+    max-width: 48rem;
+    margin-top: var(--space-4);
+    color: var(--color-text-muted);
+    line-height: 1.8;
+  }
+
+  .stories-section {
+    margin-top: var(--space-8);
+  }
+
+  .stories-section h2 {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+  }
+
+  .stories-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 300px));
+    justify-content: center;
+    gap: var(--space-4);
+  }
+</style>

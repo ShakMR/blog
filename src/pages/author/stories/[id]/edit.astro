@@ -1,0 +1,87 @@
+---
+import StoryEditorForm from '../../../../components/StoryEditorForm.astro';
+import Layout from '../../../../layouts/Layout.astro';
+import {
+  getAccessTokenFromCookies,
+  getAuthenticatedAuthorContext,
+} from '../../../../lib/auth/session';
+import { getMessages, resolveRequestLocale } from '../../../../lib/i18n';
+import { createServerSupabaseClient } from '../../../../lib/supabase/server';
+import { toDateValue, toPublicCoverUrl } from '../../../../lib/stories/utils';
+import type { StoryRecord } from '../../../../lib/stories/types';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+
+const accessToken = getAccessTokenFromCookies(Astro.cookies);
+if (!accessToken) {
+  return Astro.redirect('/auth/login?next=' + Astro.url.pathname);
+}
+
+const context = await getAuthenticatedAuthorContext(accessToken);
+if (!context) {
+  return Astro.redirect('/auth/login?error=invalid_credentials&next=' + Astro.url.pathname);
+}
+
+const storyId = Astro.params.id;
+if (!storyId) {
+  return Astro.redirect('/author/stories?error=story_not_found');
+}
+
+const authorClient = createServerSupabaseClient({ accessToken });
+const { data: story } = await authorClient
+  .from('stories')
+  .select('*')
+  .eq('id', storyId)
+  .eq('author_id', context.profile.id)
+  .maybeSingle();
+
+if (!story) {
+  return Astro.redirect('/author/stories?error=story_not_found');
+}
+
+const typedStory = story as StoryRecord;
+const coverUrl = toPublicCoverUrl(typedStory.cover_image_path);
+---
+
+<Layout title={`${t.editor.editTitle}: ${typedStory.title} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
+  <section class="container editor-page">
+    <h1>{t.editor.editTitle}</h1>
+    <a class="back-link" href="/author/stories">{t.editor.backToStories}</a>
+
+    <StoryEditorForm
+      action="/api/author/stories/save"
+      submitLabel={t.editor.saveChanges}
+      labels={t.editor}
+      storyId={typedStory.id}
+      title={typedStory.title}
+      subtitle={typedStory.subtitle}
+      slug={typedStory.slug}
+      tags={typedStory.tags.join(', ')}
+      publishedAt={toDateValue(typedStory.published_at)}
+      existingCoverPath={typedStory.cover_image_path ?? ''}
+      coverUrl={coverUrl}
+      commentsEnabled={typedStory.comments_enabled}
+      status={typedStory.status}
+      bodyHtml={typedStory.body_html}
+      bodyJson={JSON.stringify(typedStory.body_json ?? {})}
+    />
+  </section>
+</Layout>
+
+<style lang="scss">
+  .editor-page {
+    padding-block: var(--space-12);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: var(--space-3);
+    color: var(--color-accent);
+  }
+</style>

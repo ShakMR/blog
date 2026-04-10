@@ -1,16 +1,74 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getPublicAuthors } from '../lib/authors/public';
+import { getMessages, resolveRequestLocale } from '../lib/i18n';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+const typedAuthors = await getPublicAuthors();
 ---
 
-<Layout title="Autores | A poc a poc i amb bona lletra" description="Autores del blog.">
-  <section class="container page-placeholder">
-    <h1>Autores</h1>
-    <p>Esta sección se implementará en UC4.</p>
+<Layout title={`${t.authorsPage.title} | A poc a poc i amb bona lletra`} description={t.authorsPage.title}>
+  <section class="container authors-page">
+    <h1>{t.authorsPage.title}</h1>
+
+    {typedAuthors.length === 0 ? (
+      <p>{t.authorsPage.placeholder}</p>
+    ) : (
+      <ul class="authors-list">
+        {typedAuthors.map((author) => (
+          <li>
+            <a href={`/authors/${author.slug}`}>
+              <h2>{author.display_name || `@${author.slug}`}</h2>
+              <p class="handle">@{author.slug}</p>
+              <p>{author.bio.trim() || t.stories.authorBioFallback}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
   </section>
 </Layout>
 
-<style>
-  .page-placeholder {
-    padding-block: 4rem;
+<style lang="scss">
+  .authors-page {
+    padding-block: var(--space-12);
+  }
+
+  h1 {
+    margin: 0 0 var(--space-6);
+    font-family: var(--font-display);
+  }
+
+  .authors-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  .authors-list li {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+
+  .authors-list a {
+    display: block;
+    padding: var(--space-4);
+    text-decoration: none;
+  }
+
+  .authors-list h2 {
+    margin: 0;
+    font-family: var(--font-display);
+  }
+
+  .handle {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
   }
 </style>

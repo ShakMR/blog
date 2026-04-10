@@ -23,6 +23,8 @@ export interface Database {
         Row: {
           id: string;
           slug: string;
+          display_name: string;
+          grammatical_gender: 'masculine' | 'feminine' | 'neutral';
           bio: string;
           avatar_path: string | null;
           created_at: string;

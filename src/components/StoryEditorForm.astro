@@ -1,0 +1,278 @@
+---
+import ImageField from './ImageFields.astro';
+import Label from './Label.astro';
+
+interface EditorLabels {
+  fieldTitle: string;
+  fieldSubtitle: string;
+  fieldSlugOptional: string;
+  slugPlaceholder: string;
+  fieldTags: string;
+  tagsPlaceholder: string;
+  fieldPublishedAt: string;
+  fieldCover: string;
+  coverCta: string;
+  coverEmpty: string;
+  commentsEnabled: string;
+  status: string;
+  statusDraft: string;
+  statusPublished: string;
+  toolbarBold: string;
+  toolbarItalic: string;
+  toolbarList: string;
+  toolbarHeading: string;
+  toolbarParagraph: string;
+}
+
+interface Props {
+  action: string;
+  submitLabel: string;
+  labels: EditorLabels;
+  storyId?: string;
+  title?: string;
+  subtitle?: string;
+  slug?: string;
+  tags?: string;
+  publishedAt?: string;
+  existingCoverPath?: string;
+  coverUrl?: string | null;
+  commentsEnabled?: boolean;
+  status?: 'draft' | 'published';
+  bodyHtml?: string;
+  bodyJson?: string;
+}
+
+const {
+  action,
+  submitLabel,
+  labels,
+  storyId,
+  title = '',
+  subtitle = '',
+  slug = '',
+  tags = '',
+  publishedAt = '',
+  existingCoverPath = '',
+  coverUrl = null,
+  commentsEnabled = true,
+  status = 'draft',
+  bodyHtml = '',
+  bodyJson = '{}',
+} = Astro.props;
+---
+
+<form method="post" action={action} enctype="multipart/form-data" id="story-form">
+  {storyId && <input type="hidden" name="storyId" value={storyId} />}
+  <input type="hidden" name="existingCoverPath" value={existingCoverPath} />
+
+  <div class="fields">
+    <Label>{labels.fieldTitle} <input name="title" required maxlength="180" value={title} /></Label>
+    <Label>{labels.fieldSubtitle} <input name="subtitle" maxlength="220" value={subtitle} /></Label>
+    <Label>{labels.fieldSlugOptional} <input name="slug" placeholder={labels.slugPlaceholder} value={slug} /></Label>
+    <Label>{labels.fieldTags} <input name="tags" placeholder={labels.tagsPlaceholder} value={tags} /></Label>
+    <Label>{labels.fieldPublishedAt} <input type="date" name="publishedAt" value={publishedAt} /></Label>
+  </div>
+
+  <div class="cover-preview">
+    <ImageField
+      name="coverImage"
+      label={labels.fieldCover}
+      value={coverUrl}
+      ctaLabel={labels.coverCta}
+      emptyLabel={labels.coverEmpty}
+    />
+  </div>
+
+  <div class="toggles">
+    <Label>
+      <input type="hidden" name="commentsEnabled" value="false" />
+      <input type="checkbox" name="commentsEnabled" value="true" checked={commentsEnabled} />
+      {labels.commentsEnabled}
+    </Label>
+    <Label>
+      {labels.status}
+      <select name="status">
+        <option value="draft" selected={status === 'draft'}>{labels.statusDraft}</option>
+        <option value="published" selected={status === 'published'}>{labels.statusPublished}</option>
+      </select>
+    </Label>
+  </div>
+
+  <div class="editor-shell">
+    <div class="toolbar">
+      <button type="button" data-cmd="bold">{labels.toolbarBold}</button>
+      <button type="button" data-cmd="italic">{labels.toolbarItalic}</button>
+      <button type="button" data-cmd="bulletList">{labels.toolbarList}</button>
+      <button type="button" data-cmd="heading">{labels.toolbarHeading}</button>
+      <button type="button" data-cmd="paragraph">{labels.toolbarParagraph}</button>
+    </div>
+    <div id="editor" class="editor"></div>
+  </div>
+
+  <input type="hidden" name="bodyHtml" id="body-html" value={bodyHtml} />
+  <input type="hidden" name="bodyJson" id="body-json" value={bodyJson} />
+
+  <button type="submit" class="submit">{submitLabel}</button>
+</form>
+
+<script>
+  import { Editor } from '@tiptap/core';
+  import StarterKit from '@tiptap/starter-kit';
+
+  const editorElement = document.getElementById('editor') as HTMLDivElement | null;
+  const bodyHtml = document.getElementById('body-html') as HTMLInputElement | null;
+  const bodyJson = document.getElementById('body-json') as HTMLInputElement | null;
+  const form = document.getElementById('story-form') as HTMLFormElement | null;
+
+  if (!editorElement || !bodyHtml || !bodyJson || !form) {
+    throw new Error('Editor form is not mounted.');
+  }
+
+  const parseEditorJson = (value: string): Record<string, unknown> | null => {
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return null;
+      }
+      const candidate = parsed as Record<string, unknown>;
+      if (candidate.type === 'doc' || Array.isArray(candidate.content)) {
+        return candidate;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const initialContent = (parseEditorJson(bodyJson.value) ?? bodyHtml.value) || '<p></p>';
+
+  const editor = new Editor({
+    element: editorElement,
+    extensions: [StarterKit],
+    content: initialContent,
+    onUpdate: ({ editor: currentEditor }) => {
+      bodyHtml.value = currentEditor.getHTML();
+      bodyJson.value = JSON.stringify(currentEditor.getJSON());
+    },
+  });
+
+  const sync = () => {
+    bodyHtml.value = editor.getHTML();
+    bodyJson.value = JSON.stringify(editor.getJSON());
+  };
+
+  sync();
+
+  form.addEventListener('submit', () => {
+    sync();
+  });
+
+  document.querySelectorAll('[data-cmd]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const command = button.getAttribute('data-cmd');
+      if (!command) return;
+
+      if (command === 'heading') {
+        editor.chain().focus().toggleHeading({ level: 2 }).run();
+      } else if (command === 'paragraph') {
+        editor.chain().focus().setParagraph().run();
+      } else if (command === 'bold') {
+        editor.chain().focus().toggleBold().run();
+      } else if (command === 'italic') {
+        editor.chain().focus().toggleItalic().run();
+      } else if (command === 'bulletList') {
+        editor.chain().focus().toggleBulletList().run();
+      }
+
+      sync();
+    });
+  });
+</script>
+
+<style lang="scss">
+  form {
+    margin-top: var(--space-6);
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  input,
+  select {
+    font: inherit;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.8rem;
+    background: #fff;
+  }
+
+  .cover-preview {
+    margin: 0;
+    width: 420px;
+    max-width: 100%;
+  }
+
+  .toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+  }
+
+  .toggles label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .editor-shell {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-accent);
+  }
+
+  .toolbar button {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    padding: 0.35rem 0.55rem;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.85rem;
+  }
+
+  .editor {
+    min-height: 18rem;
+    padding: var(--space-4);
+  }
+
+  :global(.ProseMirror) {
+    outline: none;
+    min-height: 16rem;
+  }
+
+  .submit {
+    justify-self: start;
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1.2rem;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+    font: inherit;
+  }
+</style>

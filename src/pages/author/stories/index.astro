@@ -1,0 +1,160 @@
+---
+import StoryCard from '../../../components/StoryCard.astro';
+import Layout from '../../../layouts/Layout.astro';
+import {
+  getAccessTokenFromCookies,
+  getAuthenticatedAuthorContext,
+} from '../../../lib/auth/session';
+import { getMessages, resolveRequestLocale } from '../../../lib/i18n';
+import { createServerSupabaseClient } from '../../../lib/supabase/server';
+import { formatDate, toPublicCoverUrl } from '../../../lib/stories/utils';
+import type { StoryRecord } from '../../../lib/stories/types';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+
+const accessToken = getAccessTokenFromCookies(Astro.cookies);
+if (!accessToken) {
+  return Astro.redirect(`/auth/login?next=${encodeURIComponent('/author/stories')}`);
+}
+
+const context = await getAuthenticatedAuthorContext(accessToken);
+if (!context) {
+  return Astro.redirect(`/auth/login?error=invalid_credentials&next=${encodeURIComponent('/author/stories')}`);
+}
+
+const authorClient = createServerSupabaseClient({ accessToken });
+const { data: stories = [] } = await authorClient
+  .from('stories')
+  .select('*')
+  .eq('author_id', context.profile.id)
+  .order('updated_at', { ascending: false });
+
+const typedStories = stories as StoryRecord[];
+const status = Astro.url.searchParams.get('status');
+const error = Astro.url.searchParams.get('error');
+---
+
+<Layout title={`${t.authorStories.title} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
+  <section class="container author-stories-page">
+    <div class="header-row">
+      <div>
+        <p class="eyebrow">{t.authorStories.eyebrow}</p>
+        <h1>{t.authorStories.title}</h1>
+      </div>
+      <a class="button" href="/author/stories/new">{t.authorStories.newStory}</a>
+    </div>
+
+    {status && <p class="message ok">{t.authorStories.operationDone}: {status}</p>}
+    {error && <p class="message error">{t.authorStories.operationFailed}: {error}</p>}
+
+    {typedStories.length === 0 ? (
+      <div class="empty-state">
+        <p>{t.authorStories.empty}</p>
+      </div>
+    ) : (
+      <ul class="stories-list">
+        {typedStories.map((story) => {
+          const draftUrl = `/draft/${story.draft_access_token}`;
+          const publicUrl = `/stories/${story.slug}`;
+          return (
+            <li>
+              <StoryCard
+                variant="row"
+                title={story.title}
+                subtitle={story.subtitle}
+                coverUrl={toPublicCoverUrl(story.cover_image_path)}
+                coverAlt={`Portada de ${story.title}`}
+                statusLabel={story.status === 'published' ? t.authorStories.statusPublished : t.authorStories.statusDraft}
+                updatedAtLabel={t.authorStories.lastEdit}
+                updatedAtValue={formatDate(story.updated_at, locale)}
+                publishedAtLabel={t.authorStories.publicationDate}
+                publishedAtValue={story.published_at ? formatDate(story.published_at, locale) : null}
+              >
+                <Fragment slot="actions">
+                  <a href={`/author/stories/${story.id}/edit`}>{t.authorStories.edit}</a>
+                  <a href={draftUrl}>{t.authorStories.viewDraft}</a>
+                  {story.status === 'published' && <a href={publicUrl}>{t.authorStories.viewPublished}</a>}
+                  <form method="post" action="/api/author/stories/delete">
+                    <input type="hidden" name="storyId" value={story.id} />
+                    <button type="submit">{t.authorStories.delete}</button>
+                  </form>
+                </Fragment>
+              </StoryCard>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </section>
+</Layout>
+
+<style lang="scss">
+  .author-stories-page {
+    padding-block: var(--space-12);
+  }
+
+  .header-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .button {
+    border-radius: 999px;
+    padding: 0.7rem 1rem;
+    color: #fff;
+    text-decoration: none;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+  }
+
+  .stories-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .stories-list > li {
+    margin: 0;
+  }
+
+  .message {
+    padding: 0.7rem 0.8rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-4);
+  }
+
+  .message.ok {
+    background: #e5f6ea;
+    color: #1f6a3d;
+  }
+
+  .message.error {
+    background: #fbe5e1;
+    color: #8f2c21;
+  }
+
+  .empty-state {
+    padding: var(--space-6);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-border);
+  }
+</style>

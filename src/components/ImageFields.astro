@@ -1,0 +1,96 @@
+---
+import Label from './Label.astro';
+
+interface Props {
+  name: string;
+  label: string;
+  value?: string | null;
+  ctaLabel?: string;
+  emptyLabel?: string;
+}
+
+const {
+  name,
+  label,
+  value = null,
+  ctaLabel = 'Click para cambiar la imagen',
+  emptyLabel = 'Sin portada',
+} = Astro.props;
+
+const inputId = `${name}-input`;
+const hasImage = Boolean(value);
+---
+
+<div class="image-field">
+  <Label htmlFor={inputId}>{label}</Label>
+  <input type="file" name={name} id={inputId} accept="image/*" />
+  <div class:list={['image-field-container', { 'is-empty': !hasImage }]}>
+    {hasImage ? <img src={value ?? undefined} alt={label} /> : <div class="image-field-placeholder">{emptyLabel}</div>}
+    <label for={inputId} class="image-field-cta">{ctaLabel}</label>
+  </div>
+</div>
+
+<style lang="scss">
+  .image-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .image-field [type='file'] {
+    display: none;
+  }
+
+  .image-field-container {
+    position: relative;
+    min-height: 12rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .image-field img {
+    width: 100%;
+    height: 100%;
+    min-height: 12rem;
+    object-fit: cover;
+  }
+
+  .image-field-placeholder {
+    min-height: 12rem;
+    display: grid;
+    place-items: center;
+    color: var(--color-text-muted);
+    background: color-mix(in srgb, var(--color-bg-accent) 70%, #fff 30%);
+  }
+
+  .image-field-cta {
+    cursor: pointer;
+    border: 1px solid var(--color-border);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: var(--space-2);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border-radius: var(--radius-sm);
+  }
+
+  .image-field-container.is-empty .image-field-cta {
+    position: absolute;
+    inset: auto var(--space-3) var(--space-3) var(--space-3);
+  }
+
+  .image-field-container:hover .image-field-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+  }
+
+  .image-field-container.is-empty:hover .image-field-cta {
+    inset: auto var(--space-3) var(--space-3) var(--space-3);
+    border-radius: var(--radius-sm);
+  }
+</style>

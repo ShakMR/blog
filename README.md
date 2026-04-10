@@ -12,7 +12,7 @@ Infra bootstrap for the new blog platform.
 
 - Node.js >= 18.20.8 (Node 20 recommended)
 - npm >= 9
-- Docker Desktop (for local Supabase)
+- Docker-compatible runtime (Colima, OrbStack, or Docker Desktop) for local Supabase
 - Supabase CLI
 
 ## Local setup
@@ -71,13 +71,14 @@ After first dependency and Docker image download, local testing works offline:
 - `npm run supabase:stop`: stop local Supabase
 - `npm run supabase:reset`: reset DB from migrations and seed
 - `npm run supabase:status`: print local credentials and service URLs
+- `npm run user:create-local-author -- <email> <password> [displayName] [slug]`: create/reset local author user
 
 ## Current status
 
-- Phase: `uc1-author-login`
-- Current feature: author login + protected author space
+- Phase: `uc2-uc3-editor-and-feed`
+- Current features: author editor/publish flow + public newest publications feed
 
-## UC1 local VQA
+## UC2 + UC3 local VQA
 
 1. Ensure Supabase local stack is running.
 2. Create a local author user:
@@ -97,6 +98,9 @@ npm run dev
 4. Validate flow:
 - Open `/auth/login`.
 - Login with the created credentials.
-- Confirm redirect to `/author`.
-- Confirm role/email/locale are visible.
-- Click `Cerrar sesión` and confirm redirect to `/auth/login?status=logged_out`.
+- Open `/author/stories/new` and create a draft using the WYSIWYG editor.
+- Confirm it appears in `/author/stories`, including draft link and edit link.
+- Edit and publish the story (including past publication date, cover image, and comments toggle).
+- Open `/stories` and confirm newest publications appear sorted by publication date desc.
+- Open `/stories/<slug>` and verify rendered content + timestamps.
+- Open draft link `/draft/<token>` and confirm private draft is served with `noindex`.
