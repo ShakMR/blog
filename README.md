@@ -71,12 +71,40 @@ After first dependency and Docker image download, local testing works offline:
 - `npm run supabase:stop`: stop local Supabase
 - `npm run supabase:reset`: reset DB from migrations and seed
 - `npm run supabase:status`: print local credentials and service URLs
+- `npm run user:create-local-admin -- <email> <password> [displayName] [slug]`: create/reset local admin user with author capabilities
 - `npm run user:create-local-author -- <email> <password> [displayName] [slug]`: create/reset local author user
 
 ## Current status
 
 - Phase: `uc2-uc3-editor-and-feed`
 - Current features: author editor/publish flow + public newest publications feed
+
+## UC5 local admin flow
+
+1. Ensure Supabase local stack is running.
+2. Create a local admin user:
+
+```bash
+npm run user:create-local-admin -- admin@example.com Password123! "Admin Local" admin-local
+```
+
+Note for `zsh`: if your password has `!`, wrap it in single quotes.
+
+3. Start app:
+
+```bash
+npm run dev
+```
+
+4. Validate flow:
+- Open `/auth/login`.
+- Login with the admin credentials.
+- Open `/author` and confirm the admin-only author creation form is visible.
+- Create a new author with email, display name, optional slug, locale, and a temporary password.
+- Confirm the page shows a ready-to-send email draft with recipient, subject, and body.
+- Log out and log in with the new author account.
+- Confirm the new user can access `/author` and `/author/stories/new`.
+- Copy the draft into Gmail manually and send it to the new author.
 
 ## UC2 + UC3 local VQA
 
