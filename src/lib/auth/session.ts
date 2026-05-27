@@ -27,6 +27,10 @@ export function isAuthorRole(role: UserRole): boolean {
   return role === 'author' || role === 'admin';
 }
 
+export function isAdminRole(role: UserRole): boolean {
+  return role === 'admin';
+}
+
 export async function getAuthenticatedUser(accessToken: string): Promise<User | null> {
   const authClient = createServerSupabaseClient({ accessToken });
   const { data, error } = await authClient.auth.getUser(accessToken);

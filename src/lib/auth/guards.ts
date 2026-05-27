@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro';
-import { getAccessTokenFromCookies, getAuthenticatedAuthorContext } from './session';
+import { getAccessTokenFromCookies, getAuthenticatedAuthorContext, isAdminRole } from './session';
 
 export async function requireAuthorContext(context: APIContext) {
   const accessToken = getAccessTokenFromCookies(context.cookies);
@@ -18,4 +18,14 @@ export async function requireAuthorContext(context: APIContext) {
     accessToken,
     authorContext,
   };
+}
+
+export async function requireAdminContext(context: APIContext) {
+  const guard = await requireAuthorContext(context);
+
+  if (!guard || !isAdminRole(guard.authorContext.profile.role)) {
+    return null;
+  }
+
+  return guard;
 }

@@ -15,7 +15,8 @@
     "supabase:reset": "supabase db reset",
     "supabase:migrate": "supabase migration up",
     "supabase:status": "supabase status",
-    "user:create-local-author": "node scripts/create-local-author.mjs"
+    "user:create-local-author": "node scripts/create-local-author.mjs",
+    "user:create-local-admin": "node scripts/create-local-admin.mjs"
   },
   "dependencies": {
     "@astrojs/vercel": "^7.8.2",

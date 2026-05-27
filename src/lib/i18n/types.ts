@@ -66,6 +66,28 @@ export interface Messages {
     language: string;
     noAuthorProfile: string;
   };
+  adminUsers: {
+    title: string;
+    description: string;
+    email: string;
+    displayName: string;
+    slug: string;
+    slugHint: string;
+    locale: string;
+    temporaryPassword: string;
+    submit: string;
+    success: string;
+    successPendingEmail: string;
+    manualEmailTitle: string;
+    manualEmailDescription: string;
+    manualEmailTo: string;
+    manualEmailSubject: string;
+    manualEmailBody: string;
+    errorForbidden: string;
+    errorInvalid: string;
+    errorEmailTaken: string;
+    errorGeneric: string;
+  };
   authorStories: {
     eyebrow: string;
     title: string;
