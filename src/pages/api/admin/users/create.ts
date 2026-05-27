@@ -7,11 +7,13 @@ import {
 import { requireAdminContext } from '../../../../lib/auth/guards';
 import { buildAuthorWelcomeEmail } from '../../../../lib/email/relay';
 
+const createAuthorPath = '/author/admin/users/new';
+
 export const POST: APIRoute = async (context) => {
   const guard = await requireAdminContext(context);
 
   if (!guard) {
-    return context.redirect('/author?admin_error=forbidden', 302);
+    return context.redirect(`${createAuthorPath}?admin_error=forbidden`, 302);
   }
 
   const formData = await context.request.formData();
@@ -24,7 +26,7 @@ export const POST: APIRoute = async (context) => {
   });
 
   if (!parsed.success) {
-    return context.redirect('/author?admin_error=invalid_payload', 302);
+    return context.redirect(`${createAuthorPath}?admin_error=invalid_payload`, 302);
   }
 
   try {
@@ -41,7 +43,7 @@ export const POST: APIRoute = async (context) => {
       text: emailPreview.text,
     }), {
       httpOnly: true,
-      path: '/author',
+      path: createAuthorPath,
       sameSite: 'lax',
       secure: import.meta.env.PROD,
       maxAge: 60 * 10,
@@ -53,12 +55,12 @@ export const POST: APIRoute = async (context) => {
       slug: created.slug,
     });
 
-    return context.redirect(`/author?${search.toString()}`, 302);
+    return context.redirect(`${createAuthorPath}?${search.toString()}`, 302);
   } catch (error) {
     if (error instanceof CreateAuthorAccountError && error.code === 'email_taken') {
-      return context.redirect('/author?admin_error=email_taken', 302);
+      return context.redirect(`${createAuthorPath}?admin_error=email_taken`, 302);
     }
 
-    return context.redirect('/author?admin_error=create_failed', 302);
+    return context.redirect(`${createAuthorPath}?admin_error=create_failed`, 302);
   }
 };

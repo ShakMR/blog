@@ -61,6 +61,11 @@ export interface Messages {
     description: string;
     manageStories: string;
     newStory: string;
+    createAuthor: string;
+    accountTitle: string;
+    latestStories: string;
+    latestStoriesEmpty: string;
+    viewAllStories: string;
     role: string;
     email: string;
     language: string;
@@ -76,6 +81,7 @@ export interface Messages {
     locale: string;
     temporaryPassword: string;
     submit: string;
+    backToDashboard: string;
     success: string;
     successPendingEmail: string;
     manualEmailTitle: string;

@@ -1,7 +1,7 @@
 ---
 import '../styles/global.scss';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
-import { getAccessTokenFromCookies, getAuthSessionContext } from '../lib/auth/session';
+import { getAccessTokenFromCookies, getAuthSessionContext, isAuthorRole } from '../lib/auth/session';
 
 interface Props {
   title?: string;
@@ -20,8 +20,11 @@ const t = getMessages(locale);
 
 const accessToken = getAccessTokenFromCookies(Astro.cookies);
 const session = accessToken ? await getAuthSessionContext(accessToken) : null;
+const canAccessAuthorArea = session?.profile ? isAuthorRole(session.profile.role) : false;
 const nextPath = `${Astro.url.pathname}${Astro.url.search}`;
-const profileHref = session ? '/me' : `/auth/login?next=${encodeURIComponent(nextPath)}`;
+const profileHref = session
+  ? canAccessAuthorArea ? '/author' : '/me'
+  : `/auth/login?next=${encodeURIComponent(nextPath)}`;
 
 const localeChips = [
   { value: 'es', label: 'ESP', flag: '🇪🇸' },

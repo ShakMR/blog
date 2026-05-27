@@ -99,7 +99,8 @@ npm run dev
 4. Validate flow:
 - Open `/auth/login`.
 - Login with the admin credentials.
-- Open `/author` and confirm the admin-only author creation form is visible.
+- Open `/author` and confirm the dashboard shows user information, latest stories, and the admin-only create-author action.
+- Open `/author/admin/users/new` from the dashboard create-author action.
 - Create a new author with email, display name, optional slug, locale, and a temporary password.
 - Confirm the page shows a ready-to-send email draft with recipient, subject, and body.
 - Log out and log in with the new author account.
