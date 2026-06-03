@@ -1,0 +1,55 @@
+---
+import type { SupportedLocale } from '../../config/site';
+import type { PublicAuthor } from '../../lib/authors/public';
+import { getAuthorNoun } from '../../lib/authors/utils';
+import type { Messages } from '../../lib/i18n/types';
+import type { StoryRecord } from '../../lib/stories/types';
+import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../../lib/stories/utils';
+import StoryCard from '../StoryCard.astro';
+
+interface Props {
+  stories: StoryRecord[];
+  authors: Map<string, PublicAuthor>;
+  locale: SupportedLocale;
+  labels: Messages['stories'];
+}
+
+const { stories, authors, locale, labels } = Astro.props;
+---
+
+<ul class="stories-grid">
+  {stories.map((story) => {
+    const author = authors.get(story.author_id);
+    const authorName = author?.display_name?.trim() || (author ? `@${author.slug}` : null);
+
+    return (
+      <li>
+        <StoryCard
+          title={story.title}
+          subtitle={story.subtitle}
+          excerpt={getStoryExcerpt(story.body_html, 145) || labels.excerptFallback}
+          coverUrl={toPublicCoverUrl(story.cover_image_path)}
+          coverAlt={`Portada de ${story.title}`}
+          titleHref={`/stories/${story.slug}`}
+          authorLabel={author ? getAuthorNoun(locale, author.grammatical_gender) : labels.author}
+          authorValue={authorName}
+          authorHref={author ? `/authors/${author.slug}` : null}
+          publishedAtLabel={labels.publishedAt}
+          publishedAtValue={formatDate(story.published_at, locale)}
+        />
+      </li>
+    );
+  })}
+</ul>
+
+<style lang="scss">
+  .stories-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 300px));
+    justify-content: center;
+    gap: var(--space-4);
+  }
+</style>

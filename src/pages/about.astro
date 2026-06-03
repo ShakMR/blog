@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import PageSection from '../components/layout/PageSection.astro';
+import PageHeader from '../components/ui/PageHeader.astro';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
@@ -7,10 +9,9 @@ const t = getMessages(locale);
 ---
 
 <Layout title={`${t.aboutPage.title} | A poc a poc i amb bona lletra`} description={t.aboutPage.description}>
-  <section class="container page-placeholder">
-    <h1>{t.aboutPage.title}</h1>
-    <p>{t.aboutPage.description}</p>
-  </section>
+  <PageSection class="page-placeholder">
+    <PageHeader title={t.aboutPage.title} description={t.aboutPage.description} />
+  </PageSection>
 </Layout>
 
 <style>

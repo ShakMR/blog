@@ -1,0 +1,31 @@
+---
+interface Props {
+  label: string;
+  hint?: string;
+  for?: string;
+}
+
+const { label, hint, for: htmlFor } = Astro.props;
+---
+
+<label class="form-field" for={htmlFor}>
+  <span>{label}</span>
+  <slot />
+  {hint && <small>{hint}</small>}
+</label>
+
+<style lang="scss">
+  .form-field {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  span {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+  }
+
+  small {
+    color: var(--color-text-muted);
+  }
+</style>

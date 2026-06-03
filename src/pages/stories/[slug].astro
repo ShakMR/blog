@@ -1,5 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import StoryArticle from '../../components/content/StoryArticle.astro';
+import PageSection from '../../components/layout/PageSection.astro';
 import { getPublicAuthorsByIds } from '../../lib/authors/public';
 import { getAboutAuthorLabel } from '../../lib/authors/utils';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
@@ -26,152 +28,33 @@ if (!story) {
 const typedStory = story as StoryRecord | null;
 const typedAuthor = typedStory ? (await getPublicAuthorsByIds([typedStory.author_id])).get(typedStory.author_id) ?? null : null;
 const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : null;
+const authorLabel = typedAuthor ? getAboutAuthorLabel(locale, typedAuthor.grammatical_gender) : t.stories.aboutAuthor;
+const authorName = typedAuthor?.display_name || (typedAuthor ? `@${typedAuthor.slug}` : '-');
+const authorBio = typedAuthor?.bio?.trim() ? typedAuthor.bio : t.stories.authorBioFallback;
 ---
 
 <Layout
   title={typedStory ? `${typedStory.title} | A poc a poc i amb bona lletra` : t.stories.notFound}
   description={typedStory?.subtitle ?? t.stories.notFound}
 >
-  <section class="container story-page">
-    {typedStory ? (
-      <div class="story-layout">
-        <article>
-          {coverUrl && <img src={coverUrl} alt={`Portada de ${typedStory.title}`} class="cover" loading="lazy" />}
-          <h1>{typedStory.title}</h1>
-          <p class="subtitle">{typedStory.subtitle}</p>
-          <p class="meta">{t.stories.publishedAt}: {formatDate(typedStory.published_at, locale)}</p>
-
-          <div class="tags">
-            {typedStory.tags.map((tag) => (
-              <span>{tag}</span>
-            ))}
-          </div>
-
-          <div class="content" set:html={typedStory.body_html}></div>
-        </article>
-
-        <aside class="author-card">
-          <p class="author-label">{typedAuthor ? getAboutAuthorLabel(locale, typedAuthor.grammatical_gender) : t.stories.aboutAuthor}</p>
-          <p class="author-name">
-            {typedAuthor ? <a href={`/authors/${typedAuthor.slug}`}>{typedAuthor.display_name || `@${typedAuthor.slug}`}</a> : '-'}
-          </p>
-          {typedAuthor && <p class="author-handle">@{typedAuthor.slug}</p>}
-          <p class="author-bio">{typedAuthor?.bio?.trim() ? typedAuthor.bio : t.stories.authorBioFallback}</p>
-        </aside>
-      </div>
-    ) : (
-      <p>{t.stories.notFound}</p>
-    )}
-  </section>
+  <PageSection class="story-page">
+    <StoryArticle
+      story={typedStory}
+      notFoundLabel={t.stories.notFound}
+      coverUrl={coverUrl}
+      coverAlt={typedStory ? `Portada de ${typedStory.title}` : undefined}
+      meta={typedStory ? `${t.stories.publishedAt}: ${formatDate(typedStory.published_at, locale)}` : undefined}
+      authorLabel={authorLabel}
+      authorName={authorName}
+      authorHref={typedAuthor ? `/authors/${typedAuthor.slug}` : null}
+      authorHandle={typedAuthor ? `@${typedAuthor.slug}` : null}
+      authorBio={authorBio}
+    />
+  </PageSection>
 </Layout>
 
 <style lang="scss">
   .story-page {
     padding-block: var(--space-12);
-  }
-
-  .story-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 18rem;
-    gap: var(--space-8);
-    align-items: start;
-  }
-
-  article {
-    max-width: 720px;
-  }
-
-  .cover {
-    width: 100%;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    margin-bottom: var(--space-6);
-  }
-
-  h1 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 5vw, 3.3rem);
-  }
-
-  .subtitle {
-    color: var(--color-text-muted);
-    margin-bottom: var(--space-4);
-  }
-
-  .meta {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.86rem;
-  }
-
-  .tags {
-    margin-block: var(--space-4) var(--space-6);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-
-  .tags span {
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    padding: 0.2rem 0.55rem;
-    font-size: 0.8rem;
-  }
-
-  .content :global(p) {
-    line-height: 1.8;
-  }
-
-  .author-card {
-    position: sticky;
-    top: 5.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    padding: var(--space-4);
-  }
-
-  .author-label {
-    margin: 0;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.74rem;
-    font-weight: 700;
-  }
-
-  .author-name {
-    margin: var(--space-2) 0 0;
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    color: var(--color-text);
-  }
-
-  .author-name a {
-    text-decoration: none;
-  }
-
-  .author-handle {
-    margin: var(--space-1) 0 0;
-    color: var(--color-text-muted);
-    font-size: 0.88rem;
-  }
-
-  .author-bio {
-    margin: var(--space-3) 0 0;
-    color: var(--color-text-muted);
-    line-height: 1.7;
-  }
-
-  @media (max-width: 900px) {
-    .story-layout {
-      grid-template-columns: 1fr;
-      gap: var(--space-5);
-    }
-
-    .author-card {
-      position: static;
-    }
   }
 </style>

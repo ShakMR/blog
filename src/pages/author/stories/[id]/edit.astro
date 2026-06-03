@@ -1,5 +1,8 @@
 ---
 import StoryEditorForm from '../../../../components/StoryEditorForm.astro';
+import PageSection from '../../../../components/layout/PageSection.astro';
+import PageHeader from '../../../../components/ui/PageHeader.astro';
+import TextLink from '../../../../components/ui/TextLink.astro';
 import Layout from '../../../../layouts/Layout.astro';
 import {
   getAccessTokenFromCookies,
@@ -45,9 +48,10 @@ const coverUrl = toPublicCoverUrl(typedStory.cover_image_path);
 ---
 
 <Layout title={`${t.editor.editTitle}: ${typedStory.title} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
-  <section class="container editor-page">
-    <h1>{t.editor.editTitle}</h1>
-    <a class="back-link" href="/author/stories">{t.editor.backToStories}</a>
+  <PageSection class="editor-page">
+    <PageHeader title={t.editor.editTitle}>
+      <TextLink href="/author/stories" text={t.editor.backToStories} />
+    </PageHeader>
 
     <StoryEditorForm
       action="/api/author/stories/save"
@@ -66,7 +70,7 @@ const coverUrl = toPublicCoverUrl(typedStory.cover_image_path);
       bodyHtml={typedStory.body_html}
       bodyJson={JSON.stringify(typedStory.body_json ?? {})}
     />
-  </section>
+  </PageSection>
 </Layout>
 
 <style lang="scss">
@@ -74,14 +78,4 @@ const coverUrl = toPublicCoverUrl(typedStory.cover_image_path);
     padding-block: var(--space-12);
   }
 
-  h1 {
-    margin: 0;
-    font-family: var(--font-display);
-  }
-
-  .back-link {
-    display: inline-block;
-    margin-top: var(--space-3);
-    color: var(--color-accent);
-  }
 </style>

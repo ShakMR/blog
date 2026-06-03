@@ -1,0 +1,29 @@
+---
+interface Props {
+  href: string;
+  text: string;
+  variant?: 'primary' | 'secondary';
+}
+
+const { href, text, variant = 'secondary' } = Astro.props;
+---
+
+<a class:list={['button-link', variant]} href={href}>{text}</a>
+
+<style lang="scss">
+  .button-link {
+    display: inline-flex;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.65rem 1rem;
+    text-decoration: none;
+    color: var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  .button-link.primary {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+  }
+</style>

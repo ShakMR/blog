@@ -1,5 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AuthorGrid from '../components/content/AuthorGrid.astro';
+import PageSection from '../components/layout/PageSection.astro';
+import EmptyState from '../components/ui/EmptyState.astro';
+import PageHeader from '../components/ui/PageHeader.astro';
 import { getPublicAuthors } from '../lib/authors/public';
 import { getMessages, resolveRequestLocale } from '../lib/i18n';
 
@@ -9,66 +13,21 @@ const typedAuthors = await getPublicAuthors();
 ---
 
 <Layout title={`${t.authorsPage.title} | A poc a poc i amb bona lletra`} description={t.authorsPage.title}>
-  <section class="container authors-page">
-    <h1>{t.authorsPage.title}</h1>
+  <PageSection class="authors-page">
+    <PageHeader title={t.authorsPage.title} />
 
     {typedAuthors.length === 0 ? (
-      <p>{t.authorsPage.placeholder}</p>
+      <EmptyState text={t.authorsPage.placeholder} />
     ) : (
-      <ul class="authors-list">
-        {typedAuthors.map((author) => (
-          <li>
-            <a href={`/authors/${author.slug}`}>
-              <h2>{author.display_name || `@${author.slug}`}</h2>
-              <p class="handle">@{author.slug}</p>
-              <p>{author.bio.trim() || t.stories.authorBioFallback}</p>
-            </a>
-          </li>
-        ))}
-      </ul>
+      <AuthorGrid authors={typedAuthors} bioFallback={t.stories.authorBioFallback} />
     )}
-  </section>
+  </PageSection>
 </Layout>
 
 <style lang="scss">
   .authors-page {
     padding-block: var(--space-12);
-  }
-
-  h1 {
-    margin: 0 0 var(--space-6);
-    font-family: var(--font-display);
-  }
-
-  .authors-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-    gap: var(--space-4);
-  }
-
-  .authors-list li {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-  }
-
-  .authors-list a {
-    display: block;
-    padding: var(--space-4);
-    text-decoration: none;
-  }
-
-  .authors-list h2 {
-    margin: 0;
-    font-family: var(--font-display);
-  }
-
-  .handle {
-    margin: var(--space-1) 0 0;
-    color: var(--color-text-muted);
-    font-size: 0.88rem;
+    gap: var(--space-6);
   }
 </style>

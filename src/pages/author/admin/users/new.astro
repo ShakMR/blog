@@ -1,5 +1,12 @@
 ---
 import Layout from '../../../../layouts/Layout.astro';
+import InvitePreview from '../../../../components/content/InvitePreview.astro';
+import PageSection from '../../../../components/layout/PageSection.astro';
+import PageHeader from '../../../../components/ui/PageHeader.astro';
+import Message from '../../../../components/ui/Message.astro';
+import FormField from '../../../../components/ui/FormField.astro';
+import SubmitButton from '../../../../components/ui/SubmitButton.astro';
+import TextLink from '../../../../components/ui/TextLink.astro';
 import {
   getAccessTokenFromCookies,
   getAuthenticatedAuthorContext,
@@ -27,6 +34,14 @@ const createdEmail = Astro.url.searchParams.get('created');
 const createdSlug = Astro.url.searchParams.get('slug');
 const adminError = Astro.url.searchParams.get('admin_error');
 const invitePreviewCookie = Astro.cookies.get('admin-invite-preview')?.value ?? null;
+const createdSlugLabel = `/${createdSlug ?? '-'}`;
+const adminErrorMessages: Record<string, string> = {
+  forbidden: t.adminUsers.errorForbidden,
+  invalid_payload: t.adminUsers.errorInvalid,
+  email_taken: t.adminUsers.errorEmailTaken,
+  create_failed: t.adminUsers.errorGeneric,
+};
+const errorMessage = adminError ? adminErrorMessages[adminError] : null;
 
 let invitePreview: { toEmail: string; subject: string; text: string } | null = null;
 
@@ -44,84 +59,52 @@ if (invitePreviewCookie) {
 ---
 
 <Layout title={`${t.adminUsers.title} | A poc a poc i amb bona lletra`} description={t.adminUsers.description}>
-  <section class="container admin-users-page">
-    <a class="back-link" href="/author">{t.adminUsers.backToDashboard}</a>
+  <PageSection class="admin-users-page">
+    <TextLink href="/author" text={t.adminUsers.backToDashboard} />
 
-    <div class="admin-users__header">
-      <p class="eyebrow">Admin</p>
-      <h1>{t.adminUsers.title}</h1>
-      <p>{t.adminUsers.description}</p>
+    <PageHeader eyebrow="Admin" title={t.adminUsers.title} description={t.adminUsers.description} />
+
+    <div class="admin-users__messages">
+      {adminStatus === 'user_created' && createdEmail && (
+        <Message tone="ok">
+          {t.adminUsers.success}: <strong>{createdEmail}</strong> (<code>{createdSlugLabel}</code>).
+          {' '}
+          {t.adminUsers.successPendingEmail}
+        </Message>
+      )}
+      {errorMessage && <Message text={errorMessage} tone="error" />}
     </div>
 
-    {adminStatus === 'user_created' && createdEmail && (
-      <p class="message ok">
-        {t.adminUsers.success}: <strong>{createdEmail}</strong> (<code>/{createdSlug ?? '-'}</code>).
-        {' '}
-        {t.adminUsers.successPendingEmail}
-      </p>
-    )}
-
-    {adminError === 'forbidden' && <p class="message error">{t.adminUsers.errorForbidden}</p>}
-    {adminError === 'invalid_payload' && <p class="message error">{t.adminUsers.errorInvalid}</p>}
-    {adminError === 'email_taken' && <p class="message error">{t.adminUsers.errorEmailTaken}</p>}
-    {adminError === 'create_failed' && <p class="message error">{t.adminUsers.errorGeneric}</p>}
-
     <form class="admin-users__form" method="post" action="/api/admin/users/create">
-      <label>
-        <span>{t.adminUsers.email}</span>
+      <FormField label={t.adminUsers.email}>
         <input name="email" type="email" required autocomplete="email" />
-      </label>
+      </FormField>
 
-      <label>
-        <span>{t.adminUsers.displayName}</span>
+      <FormField label={t.adminUsers.displayName}>
         <input name="displayName" type="text" required maxlength="80" />
-      </label>
+      </FormField>
 
-      <label>
-        <span>{t.adminUsers.slug}</span>
+      <FormField label={t.adminUsers.slug} hint={t.adminUsers.slugHint}>
         <input name="slug" type="text" maxlength="80" />
-        <small>{t.adminUsers.slugHint}</small>
-      </label>
+      </FormField>
 
-      <label>
-        <span>{t.adminUsers.locale}</span>
+      <FormField label={t.adminUsers.locale}>
         <select name="locale" required>
           <option value="es">Español</option>
           <option value="ca">Català</option>
           <option value="en">English</option>
         </select>
-      </label>
+      </FormField>
 
-      <label>
-        <span>{t.adminUsers.temporaryPassword}</span>
+      <FormField label={t.adminUsers.temporaryPassword}>
         <input name="password" type="password" required minlength="10" autocomplete="new-password" />
-      </label>
+      </FormField>
 
-      <button type="submit">{t.adminUsers.submit}</button>
+      <SubmitButton text={t.adminUsers.submit} variant="danger" />
     </form>
 
-    {invitePreview && (
-      <div class="admin-users__preview">
-        <h2>{t.adminUsers.manualEmailTitle}</h2>
-        <p>{t.adminUsers.manualEmailDescription}</p>
-
-        <label>
-          <span>{t.adminUsers.manualEmailTo}</span>
-          <input type="text" value={invitePreview.toEmail} readonly />
-        </label>
-
-        <label>
-          <span>{t.adminUsers.manualEmailSubject}</span>
-          <input type="text" value={invitePreview.subject} readonly />
-        </label>
-
-        <label>
-          <span>{t.adminUsers.manualEmailBody}</span>
-          <textarea readonly rows={10}>{invitePreview.text}</textarea>
-        </label>
-      </div>
-    )}
-  </section>
+    {invitePreview && <InvitePreview preview={invitePreview} labels={t.adminUsers} />}
+  </PageSection>
 </Layout>
 
 <style lang="scss">
@@ -129,46 +112,27 @@ if (invitePreviewCookie) {
     padding-block: var(--space-12);
   }
 
-  .back-link {
-    color: var(--color-accent);
+  .admin-users-page :global(.page-header) {
+    margin-top: var(--space-5);
   }
 
-  .eyebrow {
-    margin: var(--space-5) 0 0;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  h1,
-  h2 {
-    margin-block: var(--space-2) var(--space-3);
-    font-family: var(--font-display);
-  }
-
-  .admin-users__header p {
+  .admin-users-page :global(.page-header p) {
     max-width: 44rem;
+  }
+
+  .admin-users__messages,
+  .admin-users__form {
+    max-width: 42rem;
   }
 
   .admin-users__form {
     display: grid;
     gap: var(--space-4);
-    max-width: 42rem;
     margin-top: var(--space-5);
   }
 
-  .admin-users__form label,
-  .admin-users__preview label {
-    display: grid;
-    gap: 0.45rem;
-  }
-
   .admin-users__form input,
-  .admin-users__form select,
-  input[readonly],
-  textarea[readonly] {
+  .admin-users__form select {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: 0.75rem 0.9rem;
@@ -177,50 +141,7 @@ if (invitePreviewCookie) {
     color: var(--color-text);
   }
 
-  .admin-users__form small {
-    color: var(--color-text-muted);
-  }
-
-  .admin-users__preview {
-    max-width: 42rem;
-    margin-top: var(--space-6);
-    display: grid;
-    gap: var(--space-4);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--color-border);
-  }
-
-  .message {
-    max-width: 42rem;
-    margin: var(--space-4) 0 0;
-    border-radius: var(--radius-md);
-    padding: 0.8rem 0.95rem;
-  }
-
-  .message.ok {
-    background: rgba(40, 132, 73, 0.1);
-    color: #20592f;
-  }
-
-  .message.error {
-    background: rgba(148, 46, 46, 0.1);
-    color: #7d2020;
-  }
-
-  textarea[readonly] {
-    resize: vertical;
-    min-height: 14rem;
-    white-space: pre-wrap;
-  }
-
-  button {
+  :global(.submit-button) {
     justify-self: start;
-    border: none;
-    border-radius: 999px;
-    padding: 0.7rem 1rem;
-    cursor: pointer;
-    font: inherit;
-    color: #fff;
-    background: #7f3025;
   }
 </style>

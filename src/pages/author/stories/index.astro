@@ -1,5 +1,10 @@
 ---
-import StoryCard from '../../../components/StoryCard.astro';
+import AuthorStoryList from '../../../components/content/AuthorStoryList.astro';
+import PageSection from '../../../components/layout/PageSection.astro';
+import ButtonLink from '../../../components/ui/ButtonLink.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
+import Message from '../../../components/ui/Message.astro';
+import PageHeader from '../../../components/ui/PageHeader.astro';
 import Layout from '../../../layouts/Layout.astro';
 import {
   getAccessTokenFromCookies,
@@ -7,7 +12,6 @@ import {
 } from '../../../lib/auth/session';
 import { getMessages, resolveRequestLocale } from '../../../lib/i18n';
 import { createServerSupabaseClient } from '../../../lib/supabase/server';
-import { formatDate, toPublicCoverUrl } from '../../../lib/stories/utils';
 import type { StoryRecord } from '../../../lib/stories/types';
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
@@ -36,57 +40,23 @@ const error = Astro.url.searchParams.get('error');
 ---
 
 <Layout title={`${t.authorStories.title} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
-  <section class="container author-stories-page">
+  <PageSection class="author-stories-page">
     <div class="header-row">
-      <div>
-        <p class="eyebrow">{t.authorStories.eyebrow}</p>
-        <h1>{t.authorStories.title}</h1>
-      </div>
-      <a class="button" href="/author/stories/new">{t.authorStories.newStory}</a>
+      <PageHeader eyebrow={t.authorStories.eyebrow} title={t.authorStories.title} />
+      <ButtonLink href="/author/stories/new" text={t.authorStories.newStory} variant="primary" />
     </div>
 
-    {status && <p class="message ok">{t.authorStories.operationDone}: {status}</p>}
-    {error && <p class="message error">{t.authorStories.operationFailed}: {error}</p>}
+    {status && <Message text={`${t.authorStories.operationDone}: ${status}`} />}
+    {error && <Message text={`${t.authorStories.operationFailed}: ${error}`} tone="error" />}
 
     {typedStories.length === 0 ? (
       <div class="empty-state">
-        <p>{t.authorStories.empty}</p>
+        <EmptyState text={t.authorStories.empty} />
       </div>
     ) : (
-      <ul class="stories-list">
-        {typedStories.map((story) => {
-          const draftUrl = `/draft/${story.draft_access_token}`;
-          const publicUrl = `/stories/${story.slug}`;
-          return (
-            <li>
-              <StoryCard
-                variant="row"
-                title={story.title}
-                subtitle={story.subtitle}
-                coverUrl={toPublicCoverUrl(story.cover_image_path)}
-                coverAlt={`Portada de ${story.title}`}
-                statusLabel={story.status === 'published' ? t.authorStories.statusPublished : t.authorStories.statusDraft}
-                updatedAtLabel={t.authorStories.lastEdit}
-                updatedAtValue={formatDate(story.updated_at, locale)}
-                publishedAtLabel={t.authorStories.publicationDate}
-                publishedAtValue={story.published_at ? formatDate(story.published_at, locale) : null}
-              >
-                <Fragment slot="actions">
-                  <a href={`/author/stories/${story.id}/edit`}>{t.authorStories.edit}</a>
-                  <a href={draftUrl}>{t.authorStories.viewDraft}</a>
-                  {story.status === 'published' && <a href={publicUrl}>{t.authorStories.viewPublished}</a>}
-                  <form method="post" action="/api/author/stories/delete">
-                    <input type="hidden" name="storyId" value={story.id} />
-                    <button type="submit">{t.authorStories.delete}</button>
-                  </form>
-                </Fragment>
-              </StoryCard>
-            </li>
-          );
-        })}
-      </ul>
+      <AuthorStoryList stories={typedStories} locale={locale} labels={t.authorStories} />
     )}
-  </section>
+  </PageSection>
 </Layout>
 
 <style lang="scss">
@@ -102,54 +72,8 @@ const error = Astro.url.searchParams.get('error');
     margin-bottom: var(--space-6);
   }
 
-  .button {
-    border-radius: 999px;
-    padding: 0.7rem 1rem;
-    color: #fff;
-    text-decoration: none;
-    background: linear-gradient(120deg, #8f4521, #bc6d3d);
-  }
-
-  .eyebrow {
-    margin: 0;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  h1 {
-    margin: 0;
-    font-family: var(--font-display);
-  }
-
-  .stories-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  .stories-list > li {
-    margin: 0;
-  }
-
-  .message {
-    padding: 0.7rem 0.8rem;
-    border-radius: var(--radius-sm);
-    margin-bottom: var(--space-4);
-  }
-
-  .message.ok {
-    background: #e5f6ea;
-    color: #1f6a3d;
-  }
-
-  .message.error {
-    background: #fbe5e1;
-    color: #8f2c21;
+  :global(.author-stories-page .message) {
+    margin: 0 0 var(--space-4);
   }
 
   .empty-state {

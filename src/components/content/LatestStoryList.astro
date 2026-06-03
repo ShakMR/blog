@@ -1,0 +1,104 @@
+---
+import type { SupportedLocale } from '../../config/site';
+import type { Messages } from '../../lib/i18n/types';
+import type { StoryRecord } from '../../lib/stories/types';
+import { formatDate } from '../../lib/stories/utils';
+import ButtonLink from '../ui/ButtonLink.astro';
+import EmptyState from '../ui/EmptyState.astro';
+import SectionHeader from '../ui/SectionHeader.astro';
+
+interface Props {
+  stories: StoryRecord[];
+  locale: SupportedLocale;
+  dashboardLabels: Messages['authorDashboard'];
+  storyLabels: Messages['authorStories'];
+}
+
+const { stories, locale, dashboardLabels, storyLabels } = Astro.props;
+---
+
+<div class="latest-stories-header">
+  <SectionHeader title={dashboardLabels.latestStories}>
+    <a href="/author/stories">{dashboardLabels.viewAllStories}</a>
+  </SectionHeader>
+</div>
+
+{stories.length === 0 ? (
+  <div class="empty-state">
+    <EmptyState text={dashboardLabels.latestStoriesEmpty} />
+    <ButtonLink variant="primary" href="/author/stories/new" text={dashboardLabels.newStory} />
+  </div>
+) : (
+  <ul class="latest-stories">
+    {stories.map((story) => {
+      const storyHref = story.status === 'published'
+        ? `/stories/${story.slug}`
+        : `/draft/${story.draft_access_token}`;
+
+      return (
+        <li>
+          <a class="story-title" href={`/author/stories/${story.id}/edit`}>{story.title}</a>
+          <span class="status">{story.status === 'published' ? storyLabels.statusPublished : storyLabels.statusDraft}</span>
+          <span>{storyLabels.lastEdit}: {formatDate(story.updated_at, locale)}</span>
+          <a href={storyHref}>{story.status === 'published' ? storyLabels.viewPublished : storyLabels.viewDraft}</a>
+        </li>
+      );
+    })}
+  </ul>
+)}
+
+<style lang="scss">
+  .latest-stories-header a,
+  .latest-stories a {
+    text-decoration: none;
+    color: var(--color-accent);
+  }
+
+  .latest-stories-header :global(.section-header) {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .latest-stories {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .latest-stories li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: var(--space-3);
+    align-items: center;
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-3);
+  }
+
+  .story-title {
+    font-weight: 700;
+  }
+
+  .status {
+    color: var(--color-text-muted);
+  }
+
+  .empty-state {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-4);
+  }
+
+  @media (max-width: 920px) {
+    .latest-stories li {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+  }
+</style>

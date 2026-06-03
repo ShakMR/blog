@@ -1,0 +1,36 @@
+---
+import Eyebrow from './Eyebrow.astro';
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  description?: string;
+}
+
+const { title, eyebrow, description } = Astro.props;
+---
+
+<header class="page-header">
+  {eyebrow && <Eyebrow text={eyebrow} />}
+  <h1>{title}</h1>
+  {description && <p>{description}</p>}
+  <slot />
+</header>
+
+<style lang="scss">
+  .page-header {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+  }
+
+  p {
+    max-width: 56ch;
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+</style>
