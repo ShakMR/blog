@@ -1,5 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import PageSection from '../../components/layout/PageSection.astro';
+import ButtonLink from '../../components/ui/ButtonLink.astro';
+import DefinitionGrid from '../../components/ui/DefinitionGrid.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import SubmitButton from '../../components/ui/SubmitButton.astro';
 import {
   getAccessTokenFromCookies,
   getAuthSessionContext,
@@ -20,36 +26,30 @@ if (!session) {
   return Astro.redirect('/auth/login?error=invalid_credentials&next=/me');
 }
 
+const userEmail = session.user.email ?? '';
 const canAccessAuthorArea = session.profile ? isAuthorRole(session.profile.role) : false;
+const profileItems = session.profile ? [
+  { label: t.authorDashboard.role, value: session.profile.role },
+  { label: t.authorDashboard.language, value: session.profile.locale },
+] : [];
 ---
 
 <Layout title={`${t.nav.authorSpace} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
-  <section class="container me-page">
-    <p class="eyebrow">{t.nav.signedInAs}</p>
-    <h1>{session.user.email}</h1>
-
+  <PageSection class="me-page">
+    <PageHeader eyebrow={t.nav.signedInAs} title={userEmail} />
     {session.profile ? (
-      <dl class="meta">
-        <div>
-          <dt>{t.authorDashboard.role}</dt>
-          <dd>{session.profile.role}</dd>
-        </div>
-        <div>
-          <dt>{t.authorDashboard.language}</dt>
-          <dd>{session.profile.locale}</dd>
-        </div>
-      </dl>
+      <DefinitionGrid items={profileItems} variant="wide" />
     ) : (
-      <p class="muted">{t.authorDashboard.noAuthorProfile}</p>
+      <EmptyState text={t.authorDashboard.noAuthorProfile} />
     )}
 
     <div class="actions">
-      {canAccessAuthorArea && <a href="/author">{t.nav.authorSpace}</a>}
+      {canAccessAuthorArea && <ButtonLink href="/author" text={t.nav.authorSpace} />}
       <form method="post" action="/api/auth/logout">
-        <button type="submit">{t.nav.logout}</button>
+        <SubmitButton text={t.nav.logout} variant="danger" />
       </form>
     </div>
-  </section>
+  </PageSection>
 </Layout>
 
 <style lang="scss">
@@ -57,49 +57,12 @@ const canAccessAuthorArea = session.profile ? isAuthorRole(session.profile.role)
     padding-block: var(--space-12);
   }
 
-  .eyebrow {
-    margin: 0;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  h1 {
-    margin-top: var(--space-2);
-    font-family: var(--font-display);
+  :global(.me-page h1) {
     overflow-wrap: anywhere;
   }
 
-  .meta {
+  :global(.definition-grid) {
     margin: var(--space-6) 0;
-    display: grid;
-    gap: var(--space-3);
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  }
-
-  .meta div {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    padding: var(--space-4);
-  }
-
-  dt {
-    font-size: 0.82rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  dd {
-    margin: var(--space-1) 0 0;
-    font-weight: 600;
-  }
-
-  .muted {
-    color: var(--color-text-muted);
   }
 
   .actions {
@@ -109,21 +72,4 @@ const canAccessAuthorArea = session.profile ? isAuthorRole(session.profile.role)
     align-items: center;
   }
 
-  .actions a,
-  .actions button {
-    border-radius: 999px;
-    padding: 0.65rem 1rem;
-    text-decoration: none;
-    font: inherit;
-    cursor: pointer;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-accent);
-  }
-
-  .actions button {
-    color: #fff;
-    border: none;
-    background: #7f3025;
-  }
 </style>

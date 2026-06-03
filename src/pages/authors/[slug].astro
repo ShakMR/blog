@@ -1,11 +1,13 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import StoryCard from '../../components/StoryCard.astro';
+import StoryFeed from '../../components/content/StoryFeed.astro';
+import PageSection from '../../components/layout/PageSection.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
 import { getPublicAuthorBySlug } from '../../lib/authors/public';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
 import type { StoryRecord } from '../../lib/stories/types';
-import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../../lib/stories/utils';
 import { getAuthorNoun } from '../../lib/authors/utils';
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
@@ -28,107 +30,57 @@ const { data: stories = [] } = typedAuthor
   : { data: [] };
 
 const typedStories = stories as StoryRecord[];
-const authorName = typedAuthor?.display_name?.trim() || (typedAuthor ? `@${typedAuthor.slug}` : null);
+const authorById = new Map(typedAuthor ? [[typedAuthor.id, typedAuthor]] : []);
+const authorTitle = typedAuthor?.display_name || (typedAuthor ? `@${typedAuthor.slug}` : '');
+const authorBio = typedAuthor?.bio.trim() || t.stories.authorBioFallback;
 ---
 
 <Layout
   title={typedAuthor ? `${typedAuthor.display_name || `@${typedAuthor.slug}`} | A poc a poc i amb bona lletra` : t.stories.notFound}
   description={typedAuthor?.bio || t.stories.authorBioFallback}
 >
-  <section class="container author-profile-page">
-    {typedAuthor ? (
-      <>
-        <p class="eyebrow">{getAuthorNoun(locale, typedAuthor.grammatical_gender)}</p>
-        <h1>{typedAuthor.display_name || `@${typedAuthor.slug}`}</h1>
-        <p class="handle">@{typedAuthor.slug}</p>
-        <p class="bio">{typedAuthor.bio.trim() || t.stories.authorBioFallback}</p>
+  {typedAuthor ? (
+    <>
+      <PageSection class="author-profile-header">
+        <PageHeader
+          eyebrow={getAuthorNoun(locale, typedAuthor.grammatical_gender)}
+          title={authorTitle}
+          description={`@${typedAuthor.slug}`}
+        >
+          <span class="bio">{authorBio}</span>
+        </PageHeader>
+      </PageSection>
 
-        <section class="stories-section">
-          <h2>{t.stories.latestTitle}</h2>
-          {typedStories.length === 0 ? (
-            <p>{t.stories.empty}</p>
-          ) : (
-            <ul class="stories-grid">
-              {typedStories.map((story) => (
-                <li>
-                  <StoryCard
-                    title={story.title}
-                    subtitle={story.subtitle}
-                    excerpt={getStoryExcerpt(story.body_html, 145) || t.stories.excerptFallback}
-                    coverUrl={toPublicCoverUrl(story.cover_image_path)}
-                    coverAlt={`Portada de ${story.title}`}
-                    titleHref={`/stories/${story.slug}`}
-                    authorLabel={getAuthorNoun(locale, typedAuthor.grammatical_gender)}
-                    authorValue={authorName}
-                    authorHref={`/authors/${typedAuthor.slug}`}
-                    publishedAtLabel={t.stories.publishedAt}
-                    publishedAtValue={formatDate(story.published_at, locale)}
-                    variant="row"
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </>
-    ) : (
-      <p>{t.stories.notFound}</p>
-    )}
-  </section>
+      <StoryFeed
+        title={t.stories.latestTitle}
+        emptyLabel={t.stories.empty}
+        stories={typedStories}
+        authors={authorById}
+        locale={locale}
+        labels={t.stories}
+      />
+    </>
+  ) : (
+    <PageSection class="author-profile-header">
+      <EmptyState text={t.stories.notFound} />
+    </PageSection>
+  )}
 </Layout>
 
 <style lang="scss">
-  .author-profile-page {
-    padding-block: var(--space-12);
-  }
-
-  .eyebrow {
-    margin: 0;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  h1 {
-    margin: var(--space-2) 0 0;
-    font-family: var(--font-display);
-  }
-
-  .handle {
-    margin: var(--space-1) 0 0;
-    color: var(--color-text-muted);
+  :global(.author-profile-header) {
+    padding-top: var(--space-12);
   }
 
   .bio {
+    display: block;
     max-width: 48rem;
-    margin-top: var(--space-4);
+    margin-top: var(--space-2);
     color: var(--color-text-muted);
     line-height: 1.8;
   }
 
-  .stories-section {
+  :global(.feed) {
     margin-top: var(--space-8);
-  }
-
-  .stories-section h2 {
-    margin: 0 0 var(--space-4);
-    font-family: var(--font-display);
-  }
-
-  .stories-grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-  }
-
-  .stories-grid li {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
   }
 </style>

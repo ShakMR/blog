@@ -1,0 +1,67 @@
+---
+import type { Messages } from '../../lib/i18n/types';
+import FormField from '../ui/FormField.astro';
+import SectionHeader from '../ui/SectionHeader.astro';
+
+interface Preview {
+  toEmail: string;
+  subject: string;
+  text: string;
+}
+
+interface Props {
+  preview: Preview;
+  labels: Messages['adminUsers'];
+}
+
+const { preview, labels } = Astro.props;
+---
+
+<div class="admin-users__preview">
+  <SectionHeader title={labels.manualEmailTitle} />
+  <p>{labels.manualEmailDescription}</p>
+
+  <FormField label={labels.manualEmailTo}>
+    <input type="text" value={preview.toEmail} readonly />
+  </FormField>
+
+  <FormField label={labels.manualEmailSubject}>
+    <input type="text" value={preview.subject} readonly />
+  </FormField>
+
+  <FormField label={labels.manualEmailBody}>
+    <textarea readonly rows={10}>{preview.text}</textarea>
+  </FormField>
+</div>
+
+<style lang="scss">
+  .admin-users__preview {
+    max-width: 42rem;
+    margin-top: var(--space-6);
+    display: grid;
+    gap: var(--space-4);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  p {
+    margin: calc(var(--space-4) * -1) 0 0;
+    color: var(--color-text-muted);
+  }
+
+  input[readonly],
+  textarea[readonly] {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.9rem;
+    font: inherit;
+    background: #fff;
+    color: var(--color-text);
+  }
+
+  textarea[readonly] {
+    resize: vertical;
+    min-height: 14rem;
+    white-space: pre-wrap;
+  }
+</style>

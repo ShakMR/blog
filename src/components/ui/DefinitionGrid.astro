@@ -1,0 +1,54 @@
+---
+interface Item {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  items: Item[];
+  variant?: 'default' | 'wide';
+}
+
+const { items, variant = 'default' } = Astro.props;
+---
+
+<dl class:list={['definition-grid', variant]}>
+  {items.map((item) => (
+    <div>
+      <dt>{item.label}</dt>
+      <dd>{item.value}</dd>
+    </div>
+  ))}
+</dl>
+
+<style lang="scss">
+  .definition-grid {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  .definition-grid.wide {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+
+  .definition-grid div {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    background: #fff;
+  }
+
+  dt {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+    font-weight: 600;
+  }
+</style>

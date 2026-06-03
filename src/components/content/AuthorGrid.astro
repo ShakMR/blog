@@ -1,0 +1,52 @@
+---
+import type { PublicAuthor } from '../../lib/authors/public';
+import Panel from '../ui/Panel.astro';
+
+interface Props {
+  authors: PublicAuthor[];
+  bioFallback: string;
+}
+
+const { authors, bioFallback } = Astro.props;
+---
+
+<ul class="authors-list">
+  {authors.map((author) => (
+    <li>
+      <a href={`/authors/${author.slug}`}>
+        <Panel title={author.display_name || `@${author.slug}`}>
+          <p class="handle">@{author.slug}</p>
+          <p>{author.bio.trim() || bioFallback}</p>
+        </Panel>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style lang="scss">
+  .authors-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--space-4);
+  }
+
+  .authors-list a {
+    display: block;
+    height: 100%;
+    text-decoration: none;
+  }
+
+  :global(.authors-list .panel) {
+    min-height: 100%;
+    border-radius: var(--radius-lg);
+  }
+
+  .handle {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+  }
+</style>

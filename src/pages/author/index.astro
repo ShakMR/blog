@@ -1,5 +1,12 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import LatestStoryList from '../../components/content/LatestStoryList.astro';
+import PageSection from '../../components/layout/PageSection.astro';
+import ButtonLink from '../../components/ui/ButtonLink.astro';
+import DefinitionGrid from '../../components/ui/DefinitionGrid.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
+import Panel from '../../components/ui/Panel.astro';
+import SubmitButton from '../../components/ui/SubmitButton.astro';
 import {
   getAccessTokenFromCookies,
   getAuthenticatedAuthorContext,
@@ -7,7 +14,6 @@ import {
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
 import type { StoryRecord } from '../../lib/stories/types';
-import { formatDate } from '../../lib/stories/utils';
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
@@ -34,80 +40,44 @@ const { data: stories = [] } = await authorClient
   .order('updated_at', { ascending: false })
   .limit(5);
 
-const latestStories = stories as StoryRecord[];
+const latestStories = (stories ?? []) as StoryRecord[];
+const profileItems = [
+  { label: t.authorDashboard.role, value: profile.role },
+  { label: t.authorDashboard.email, value: user.email ?? '' },
+  { label: t.authorDashboard.language, value: profile.locale },
+];
 ---
 
 <Layout title={`${t.nav.authorSpace} | A poc a poc i amb bona lletra`} description={t.authorDashboard.description}>
-  <section class="container author-page">
-    <header class="dashboard-header">
-      <div>
-        <p class="eyebrow">{t.authorDashboard.eyebrow}</p>
-        <h1>{t.authorDashboard.welcome}, {profile.display_name}</h1>
-        <p>{t.authorDashboard.description}</p>
-      </div>
-
+  <PageSection class="author-page">
+    <PageHeader
+      eyebrow={t.authorDashboard.eyebrow}
+      title={`${t.authorDashboard.welcome}, ${profile.display_name}`}
+      description={t.authorDashboard.description}
+    >
       <div class="quick-actions">
-        <a class="button primary" href="/author/stories/new">{t.authorDashboard.newStory}</a>
-        {isAdmin && <a class="button" href="/author/admin/users/new">{t.authorDashboard.createAuthor}</a>}
+        <ButtonLink variant="primary" href="/author/stories/new" text={t.authorDashboard.newStory} />
+        {isAdmin && <ButtonLink href="/author/admin/users/new" text={t.authorDashboard.createAuthor} />}
       </div>
-    </header>
+    </PageHeader>
 
-    <section aria-labelledby="account-title">
-      <h2 id="account-title">{t.authorDashboard.accountTitle}</h2>
+    <Panel title={t.authorDashboard.accountTitle}>
+      <DefinitionGrid items={profileItems} />
+    </Panel>
 
-      <dl class="meta">
-        <div>
-          <dt>{t.authorDashboard.role}</dt>
-          <dd>{profile.role}</dd>
-        </div>
-        <div>
-          <dt>{t.authorDashboard.email}</dt>
-          <dd>{user.email}</dd>
-        </div>
-        <div>
-          <dt>{t.authorDashboard.language}</dt>
-          <dd>{profile.locale}</dd>
-        </div>
-      </dl>
-    </section>
-
-    <section class="panel" aria-labelledby="latest-stories-title">
-      <div class="section-header">
-        <h2 id="latest-stories-title">{t.authorDashboard.latestStories}</h2>
-        <a href="/author/stories">{t.authorDashboard.viewAllStories}</a>
-      </div>
-
-      {latestStories.length === 0 ? (
-        <div class="empty-state">
-          <p>{t.authorDashboard.latestStoriesEmpty}</p>
-          <a class="button primary" href="/author/stories/new">{t.authorDashboard.newStory}</a>
-        </div>
-      ) : (
-        <ul class="latest-stories">
-          {latestStories.map((story) => {
-            const storyHref = story.status === 'published'
-              ? `/stories/${story.slug}`
-              : `/draft/${story.draft_access_token}`;
-
-            return (
-              <li>
-                <a class="story-title" href={`/author/stories/${story.id}/edit`}>{story.title}</a>
-                <span class="status">{story.status === 'published' ? t.authorStories.statusPublished : t.authorStories.statusDraft}</span>
-                <span>{t.authorStories.lastEdit}: {formatDate(story.updated_at, locale)}</span>
-                <a href={storyHref}>
-                  {story.status === 'published' ? t.authorStories.viewPublished : t.authorStories.viewDraft}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </section>
+    <Panel>
+      <LatestStoryList
+        stories={latestStories}
+        locale={locale}
+        dashboardLabels={t.authorDashboard}
+        storyLabels={t.authorStories}
+      />
+    </Panel>
 
     <form class="logout-form" method="post" action="/api/auth/logout">
-      <button type="submit">{t.nav.logout}</button>
+      <SubmitButton text={t.nav.logout} variant="danger" />
     </form>
-  </section>
+  </PageSection>
 </Layout>
 
 <style lang="scss">
@@ -117,143 +87,14 @@ const latestStories = stories as StoryRecord[];
     gap: var(--space-6);
   }
 
-  .dashboard-header,
-  .section-header {
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  .dashboard-header p {
-    max-width: 44rem;
-  }
-
-  .eyebrow {
-    margin: 0;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  h1,
-  h2 {
-    margin-block: var(--space-2) var(--space-3);
-    font-family: var(--font-display);
-  }
-
-  .quick-actions,
-  .empty-state {
+  .quick-actions {
     display: flex;
     gap: var(--space-3);
     flex-wrap: wrap;
     align-items: center;
   }
 
-  .button,
-  .section-header a,
-  .latest-stories a {
-    text-decoration: none;
-    color: var(--color-accent);
-  }
-
-  .button {
-    display: inline-flex;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    padding: 0.65rem 1rem;
-    background: var(--color-surface);
-  }
-
-  .button.primary {
-    color: #fff;
-    border-color: transparent;
-    background: linear-gradient(120deg, #8f4521, #bc6d3d);
-  }
-
-  .panel {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-5);
-    background: var(--color-surface);
-  }
-
-  .meta {
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    gap: var(--space-4);
-  }
-
-  .meta div {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    background: #fff;
-  }
-
-  dt {
-    font-size: 0.82rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-  }
-
-  dd {
-    margin: var(--space-1) 0 0;
-    font-weight: 600;
-  }
-
-  .latest-stories {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-3);
-  }
-
-  .latest-stories li {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
-    gap: var(--space-3);
-    align-items: center;
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-3);
-  }
-
-  .story-title {
-    font-weight: 700;
-  }
-
-  .status {
-    color: var(--color-text-muted);
-  }
-
-  .empty-state {
-    justify-content: space-between;
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-4);
-  }
-
   .logout-form {
     margin-top: var(--space-2);
-  }
-
-  button {
-    border: none;
-    border-radius: 999px;
-    padding: 0.7rem 1rem;
-    cursor: pointer;
-    font: inherit;
-    color: #fff;
-    background: #7f3025;
-  }
-
-  @media (max-width: 920px) {
-    .latest-stories li {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-    }
   }
 </style>

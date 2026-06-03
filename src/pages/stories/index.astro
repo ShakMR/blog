@@ -1,11 +1,12 @@
 ---
-import StoryCard from '../../components/StoryCard.astro';
+import StoryCardGrid from '../../components/content/StoryCardGrid.astro';
+import PageSection from '../../components/layout/PageSection.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
+import PageHeader from '../../components/ui/PageHeader.astro';
 import Layout from '../../layouts/Layout.astro';
 import { getPublicAuthorsByIds } from '../../lib/authors/public';
-import { getAuthorNoun } from '../../lib/authors/utils';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
-import { formatDate, getStoryExcerpt, toPublicCoverUrl } from '../../lib/stories/utils';
 import type { StoryRecord } from '../../lib/stories/types';
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
@@ -19,77 +20,27 @@ const { data: stories = [] } = await supabase
   .order('published_at', { ascending: false })
   .limit(48);
 
-const typedStories = stories as StoryRecord[];
+const typedStories = (stories ?? []) as StoryRecord[];
 const authorIds = [...new Set(typedStories.map((story) => story.author_id))];
 const authorById = await getPublicAuthorsByIds(authorIds);
 ---
 
 <Layout title={`${t.stories.latestTitle} | A poc a poc i amb bona lletra`} description={t.home.subtitle}>
-  <section class="container stories-page">
-    <p class="eyebrow">{t.stories.eyebrow}</p>
-    <h1>{t.stories.latestTitle}</h1>
+  <PageSection class="stories-page">
+    <PageHeader eyebrow={t.stories.eyebrow} title={t.stories.latestTitle} />
 
     {typedStories.length === 0 ? (
-      <p>{t.stories.empty}</p>
+      <EmptyState text={t.stories.empty} />
     ) : (
-      <ul class="stories-grid">
-        {typedStories.map((story) => (
-          <li>
-            {
-              (() => {
-                const author = authorById.get(story.author_id);
-                const authorName = author?.display_name?.trim() || (author ? `@${author.slug}` : null);
-                return (
-            <StoryCard
-              title={story.title}
-              subtitle={story.subtitle}
-              excerpt={getStoryExcerpt(story.body_html, 145) || t.stories.excerptFallback}
-              coverUrl={toPublicCoverUrl(story.cover_image_path)}
-              coverAlt={`Portada de ${story.title}`}
-              titleHref={`/stories/${story.slug}`}
-              authorLabel={author ? getAuthorNoun(locale, author.grammatical_gender) : t.stories.author}
-              authorValue={authorName}
-              authorHref={author ? `/authors/${author.slug}` : null}
-              publishedAtLabel={t.stories.publishedAt}
-              publishedAtValue={formatDate(story.published_at, locale)}
-            />
-                );
-              })()
-            }
-          </li>
-        ))}
-      </ul>
+      <StoryCardGrid stories={typedStories} authors={authorById} locale={locale} labels={t.stories} />
     )}
-  </section>
+  </PageSection>
 </Layout>
 
 <style lang="scss">
   .stories-page {
     padding-block: var(--space-12);
-  }
-
-  .eyebrow {
-    margin: 0;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-    font-weight: 700;
-  }
-
-  h1 {
-    margin-top: var(--space-2);
-    margin-bottom: var(--space-6);
-    font-family: var(--font-display);
-  }
-
-  .stories-grid {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 300px));
-    justify-content: center;
-    gap: var(--space-4);
+    gap: var(--space-6);
   }
 </style>

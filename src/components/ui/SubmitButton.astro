@@ -1,0 +1,27 @@
+---
+interface Props {
+  text: string;
+  variant?: 'primary' | 'danger';
+}
+
+const { text, variant = 'primary' } = Astro.props;
+---
+
+<button class:list={['submit-button', variant]} type="submit">{text}</button>
+
+<style lang="scss">
+  .submit-button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font: inherit;
+    color: #fff;
+    background: linear-gradient(120deg, #8f4521, #bc6d3d);
+  }
+
+  .submit-button.danger {
+    padding: 0.7rem 1rem;
+    background: #7f3025;
+  }
+</style>

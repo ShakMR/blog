@@ -1,0 +1,63 @@
+---
+import type { SupportedLocale } from '../../config/site';
+import type { Messages } from '../../lib/i18n/types';
+import type { StoryRecord } from '../../lib/stories/types';
+import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
+import StoryCard from '../StoryCard.astro';
+
+interface Props {
+  stories: StoryRecord[];
+  locale: SupportedLocale;
+  labels: Messages['authorStories'];
+}
+
+const { stories, locale, labels } = Astro.props;
+---
+
+<ul class="stories-list">
+  {stories.map((story) => {
+    const draftUrl = `/draft/${story.draft_access_token}`;
+    const publicUrl = `/stories/${story.slug}`;
+
+    return (
+      <li>
+        <StoryCard
+          variant="row"
+          title={story.title}
+          subtitle={story.subtitle}
+          coverUrl={toPublicCoverUrl(story.cover_image_path)}
+          coverAlt={`Portada de ${story.title}`}
+          statusLabel={story.status === 'published' ? labels.statusPublished : labels.statusDraft}
+          updatedAtLabel={labels.lastEdit}
+          updatedAtValue={formatDate(story.updated_at, locale)}
+          publishedAtLabel={labels.publicationDate}
+          publishedAtValue={story.published_at ? formatDate(story.published_at, locale) : null}
+        >
+          <Fragment slot="actions">
+            <a href={`/author/stories/${story.id}/edit`}>{labels.edit}</a>
+            <a href={draftUrl}>{labels.viewDraft}</a>
+            {story.status === 'published' && <a href={publicUrl}>{labels.viewPublished}</a>}
+            <form method="post" action="/api/author/stories/delete">
+              <input type="hidden" name="storyId" value={story.id} />
+              <button type="submit">{labels.delete}</button>
+            </form>
+          </Fragment>
+        </StoryCard>
+      </li>
+    );
+  })}
+</ul>
+
+<style lang="scss">
+  .stories-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .stories-list > li {
+    margin: 0;
+  }
+</style>

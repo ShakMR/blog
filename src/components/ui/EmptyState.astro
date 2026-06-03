@@ -1,0 +1,16 @@
+---
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<p class="empty-state">{text}</p>
+
+<style lang="scss">
+  .empty-state {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+</style>

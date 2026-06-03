@@ -1,0 +1,72 @@
+---
+import PageSection from '../layout/PageSection.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  imageSrc: string;
+  imageAlt: string;
+}
+
+const { eyebrow, title, subtitle, imageSrc, imageAlt } = Astro.props;
+---
+
+<PageSection class="hero">
+  <div>
+    <Eyebrow text={eyebrow} />
+    <h1>{title}</h1>
+    <p>{subtitle}</p>
+  </div>
+  <img
+    src={imageSrc}
+    alt={imageAlt}
+    width="220"
+    height="220"
+    loading="eager"
+    decoding="async"
+  />
+</PageSection>
+
+<style lang="scss">
+  :global(.hero) {
+    padding-block: var(--space-12) var(--space-8);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-6);
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 4.25rem);
+    line-height: 1.05;
+  }
+
+  p {
+    max-width: 56ch;
+    color: var(--color-text-muted);
+  }
+
+  img {
+    width: min(220px, 32vw);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 999px;
+    object-fit: cover;
+    box-shadow: 0 20px 40px rgba(73, 37, 18, 0.12);
+  }
+
+  @media (max-width: 720px) {
+    :global(.hero) {
+      grid-template-columns: 1fr;
+    }
+
+    img {
+      width: min(180px, 48vw);
+    }
+  }
+</style>
