@@ -1,6 +1,7 @@
 ---
 import ImageField from './ImageFields.astro';
 import Label from './Label.astro';
+import StoryFeedbackSettings from './content/StoryFeedbackSettings.astro';
 
 interface EditorLabels {
   fieldTitle: string;
@@ -13,6 +14,12 @@ interface EditorLabels {
   fieldCover: string;
   coverCta: string;
   coverEmpty: string;
+  feedbackTitle: string;
+  feedbackDescription: string;
+  kudosVisibility: string;
+  kudosDisabled: string;
+  kudosPrivate: string;
+  kudosPublic: string;
   commentsEnabled: string;
   status: string;
   statusDraft: string;
@@ -37,6 +44,7 @@ interface Props {
   existingCoverPath?: string;
   coverUrl?: string | null;
   commentsEnabled?: boolean;
+  kudosVisibility?: 'disabled' | 'private' | 'public';
   status?: 'draft' | 'published';
   bodyHtml?: string;
   bodyJson?: string;
@@ -55,6 +63,7 @@ const {
   existingCoverPath = '',
   coverUrl = null,
   commentsEnabled = true,
+  kudosVisibility = 'private',
   status = 'draft',
   bodyHtml = '',
   bodyJson = '{}',
@@ -83,12 +92,9 @@ const {
     />
   </div>
 
+  <StoryFeedbackSettings labels={labels} commentsEnabled={commentsEnabled} kudosVisibility={kudosVisibility} />
+
   <div class="toggles">
-    <Label>
-      <input type="hidden" name="commentsEnabled" value="false" />
-      <input type="checkbox" name="commentsEnabled" value="true" checked={commentsEnabled} />
-      {labels.commentsEnabled}
-    </Label>
     <Label>
       {labels.status}
       <select name="status">

@@ -7,11 +7,12 @@ import StoryCard from '../StoryCard.astro';
 
 interface Props {
   stories: StoryRecord[];
+  kudosCounts?: Record<string, number>;
   locale: SupportedLocale;
   labels: Messages['authorStories'];
 }
 
-const { stories, locale, labels } = Astro.props;
+const { stories, kudosCounts = {}, locale, labels } = Astro.props;
 ---
 
 <ul class="stories-list">
@@ -34,6 +35,7 @@ const { stories, locale, labels } = Astro.props;
           publishedAtValue={story.published_at ? formatDate(story.published_at, locale) : null}
         >
           <Fragment slot="actions">
+            <span class="metric">{labels.kudos}: {kudosCounts[story.id] ?? 0}</span>
             <a href={`/author/stories/${story.id}/edit`}>{labels.edit}</a>
             <a href={draftUrl}>{labels.viewDraft}</a>
             {story.status === 'published' && <a href={publicUrl}>{labels.viewPublished}</a>}
@@ -59,5 +61,10 @@ const { stories, locale, labels } = Astro.props;
 
   .stories-list > li {
     margin: 0;
+  }
+
+  .metric {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
   }
 </style>

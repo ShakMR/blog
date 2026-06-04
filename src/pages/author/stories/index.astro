@@ -35,6 +35,14 @@ const { data: stories = [] } = await authorClient
   .order('updated_at', { ascending: false });
 
 const typedStories = stories as StoryRecord[];
+const storyIds = typedStories.map((story) => story.id);
+const { data: kudosRows = [] } = storyIds.length
+  ? await authorClient.from('story_kudos').select('story_id').in('story_id', storyIds)
+  : { data: [] };
+const kudosCounts = (kudosRows ?? []).reduce<Record<string, number>>((counts, row) => {
+  counts[row.story_id] = (counts[row.story_id] ?? 0) + 1;
+  return counts;
+}, {});
 const status = Astro.url.searchParams.get('status');
 const error = Astro.url.searchParams.get('error');
 ---
@@ -54,7 +62,7 @@ const error = Astro.url.searchParams.get('error');
         <EmptyState text={t.authorStories.empty} />
       </div>
     ) : (
-      <AuthorStoryList stories={typedStories} locale={locale} labels={t.authorStories} />
+      <AuthorStoryList stories={typedStories} kudosCounts={kudosCounts} locale={locale} labels={t.authorStories} />
     )}
   </PageSection>
 </Layout>

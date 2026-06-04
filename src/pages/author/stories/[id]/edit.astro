@@ -66,6 +66,7 @@ const coverUrl = toPublicCoverUrl(typedStory.cover_image_path);
       existingCoverPath={typedStory.cover_image_path ?? ''}
       coverUrl={coverUrl}
       commentsEnabled={typedStory.comments_enabled}
+      kudosVisibility={typedStory.kudos_visibility}
       status={typedStory.status}
       bodyHtml={typedStory.body_html}
       bodyJson={JSON.stringify(typedStory.body_json ?? {})}

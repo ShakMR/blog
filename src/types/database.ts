@@ -43,6 +43,7 @@ export interface Database {
           body_html: string;
           status: 'draft' | 'published';
           comments_enabled: boolean;
+          kudos_visibility: 'disabled' | 'private' | 'public';
           cover_image_path: string | null;
           published_at: string | null;
           draft_access_token: string;
@@ -57,6 +58,16 @@ export interface Database {
           author_name: string;
           body: string;
           author_email_hash: string | null;
+          user_agent: string | null;
+          source_ip: string | null;
+          created_at: string;
+        };
+      };
+      story_kudos: {
+        Row: {
+          id: string;
+          story_id: string;
+          client_hash: string;
           user_agent: string | null;
           source_ip: string | null;
           created_at: string;
