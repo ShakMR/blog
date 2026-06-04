@@ -1,0 +1,219 @@
+---
+import type { Messages } from '../../lib/i18n/types';
+
+interface Props {
+  storyId: string;
+  storySlug: string;
+  visibility: 'private' | 'public';
+  count: number;
+  sent?: boolean;
+  labels: Messages['kudos'];
+  status?: string | null;
+  error?: string | null;
+}
+
+const { storyId, storySlug, visibility, count, sent = false, labels, status = null, error = null } = Astro.props;
+const hasSent = sent || status === 'sent';
+const tooltip = error ? labels.errorGeneric : hasSent ? labels.success : labels.submit;
+const buttonClass = error ? 'error' : hasSent ? 'sent' : '';
+const icon = hasSent ? '🙌' : '🎉';
+---
+
+<section id="kudos" class="story-kudos" aria-label={labels.title}>
+  <form method="post" action="/api/kudos/create" class="kudos-form" data-kudos-form>
+    <input type="hidden" name="storyId" value={storyId} />
+    <input type="hidden" name="storySlug" value={storySlug} />
+    <span class="tooltip" data-tooltip={tooltip} data-kudos-tooltip>
+      <button class:list={['kudos-button', buttonClass]} type="submit" aria-label={tooltip} title={tooltip} data-kudos-button>
+        <span class="icon" aria-hidden="true" data-kudos-icon>{icon}</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </span>
+    {visibility === 'public' && <span class="count" data-kudos-count>{labels.count.replace('{count}', String(count))}</span>}
+    <span class="status" aria-live="polite" data-kudos-status>{status === 'sent' || error ? tooltip : ''}</span>
+  </form>
+</section>
+
+<style lang="scss">
+  .story-kudos {
+    margin: 0;
+  }
+
+  .kudos-form {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .kudos-button {
+    width: 3rem;
+    height: 3rem;
+    border: 2px solid var(--color-text-muted);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    position: relative;
+    font-size: 1.35rem;
+    line-height: 1;
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--transition-base),
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  .kudos-button:hover,
+  .kudos-button:focus-visible,
+  .kudos-button.sent {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-soft-higher);
+    transform: translateY(-1px);
+  }
+
+  .kudos-button:focus-visible {
+    outline: 3px solid var(--color-text);
+    outline-offset: 3px;
+  }
+
+  .kudos-button.error {
+    border-color: #a33a2d;
+  }
+
+  .count {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .tooltip {
+    position: relative;
+  }
+
+  .kudos-button.pending {
+    cursor: progress;
+  }
+
+  .kudos-button.pending .icon {
+    opacity: 0;
+  }
+
+  .spinner {
+    position: absolute;
+    width: 1.15rem;
+    height: 1.15rem;
+    border: 2px solid var(--color-accent-soft);
+    border-top-color: var(--color-accent);
+    border-radius: 999px;
+    opacity: 0;
+    animation: kudos-spin 650ms linear infinite;
+  }
+
+  .kudos-button.pending .spinner {
+    opacity: 1;
+  }
+
+  .tooltip::after {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.55rem);
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(0.2rem);
+    transition: opacity var(--transition-base), transform var(--transition-base);
+    border-radius: var(--radius-sm);
+    background: var(--color-text);
+    color: #fff;
+    content: attr(data-tooltip);
+    font-size: 0.82rem;
+    padding: 0.35rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .tooltip:hover::after,
+  .tooltip:focus-within::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  @keyframes kudos-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ sentIcon: '🙌', successLabel: labels.success, errorLabel: labels.errorGeneric, countLabel: labels.count }}>
+  document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.matches('[data-kudos-form]')) {
+      return;
+    }
+
+    event.preventDefault();
+    const button = form.querySelector('[data-kudos-button]');
+    const tooltip = form.querySelector('[data-kudos-tooltip]');
+    const status = form.querySelector('[data-kudos-status]');
+    const count = form.querySelector('[data-kudos-count]');
+    const icon = form.querySelector('[data-kudos-icon]');
+
+    if (!(button instanceof HTMLButtonElement) || !(tooltip instanceof HTMLElement)) {
+      form.submit();
+      return;
+    }
+
+    button.disabled = true;
+    button.classList.add('pending');
+    const minimumDelay = new Promise((resolve) => setTimeout(resolve, 700));
+
+    try {
+      const responsePromise = fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { accept: 'application/json' },
+      });
+      const [response] = await Promise.all([responsePromise, minimumDelay]);
+      const result = await response.json();
+      const message = result.ok ? successLabel : errorLabel;
+
+      button.classList.toggle('sent', result.ok);
+      button.classList.toggle('error', !result.ok);
+      if (result.ok && icon instanceof HTMLElement) {
+        icon.textContent = sentIcon;
+      }
+      button.setAttribute('aria-label', message);
+      button.setAttribute('title', message);
+      tooltip.dataset.tooltip = message;
+
+      if (status instanceof HTMLElement) {
+        status.textContent = message;
+      }
+
+      if (result.ok && count instanceof HTMLElement && typeof result.count === 'number') {
+        count.textContent = countLabel.replace('{count}', String(result.count));
+      }
+    } catch {
+      await minimumDelay;
+      button.classList.add('error');
+      button.setAttribute('aria-label', errorLabel);
+      button.setAttribute('title', errorLabel);
+      tooltip.dataset.tooltip = errorLabel;
+      if (status instanceof HTMLElement) {
+        status.textContent = errorLabel;
+      }
+    } finally {
+      button.classList.remove('pending');
+      button.disabled = false;
+    }
+  });
+</script>

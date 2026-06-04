@@ -1,11 +1,20 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import CommentsSection from '../../components/content/CommentsSection.astro';
 import StoryArticle from '../../components/content/StoryArticle.astro';
-import PageSection from '../../components/layout/PageSection.astro';
+import StoryKudos from '../../components/content/StoryKudos.astro';
+import StoryPageShell from '../../components/layout/StoryPageShell.astro';
 import { getPublicAuthorsByIds } from '../../lib/authors/public';
+import type { CommentRecord } from '../../lib/comments/types';
 import { getAboutAuthorLabel } from '../../lib/authors/utils';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
-import { createServerSupabaseClient } from '../../lib/supabase/server';
+import {
+  hashKudosClientToken,
+  isKudosEnabled,
+  isValidKudosClientToken,
+  KUDOS_CLIENT_COOKIE,
+} from '../../lib/kudos/validation';
+import { createServerSupabaseClient, createServiceRoleClient } from '../../lib/supabase/server';
 import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
 import type { StoryRecord } from '../../lib/stories/types';
 
@@ -31,13 +40,47 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
 const authorLabel = typedAuthor ? getAboutAuthorLabel(locale, typedAuthor.grammatical_gender) : t.stories.aboutAuthor;
 const authorName = typedAuthor?.display_name || (typedAuthor ? `@${typedAuthor.slug}` : '-');
 const authorBio = typedAuthor?.bio?.trim() ? typedAuthor.bio : t.stories.authorBioFallback;
+const { data: comments = [] } = typedStory?.comments_enabled
+  ? await supabase
+      .from('comments')
+      .select('id, story_id, author_name, body, created_at')
+      .eq('story_id', typedStory.id)
+      .order('created_at', { ascending: true })
+      .limit(100)
+  : { data: [] };
+const typedComments = (comments ?? []) as CommentRecord[];
+let kudosCount = 0;
+let hasSentKudos = false;
+if (typedStory && isKudosEnabled(typedStory.kudos_visibility)) {
+  const serviceClient = createServiceRoleClient();
+  const { count = 0 } = await serviceClient
+    .from('story_kudos')
+    .select('id', { count: 'exact', head: true })
+    .eq('story_id', typedStory.id);
+  kudosCount = count ?? 0;
+
+  const kudosToken = Astro.cookies.get(KUDOS_CLIENT_COOKIE)?.value;
+  if (isValidKudosClientToken(kudosToken)) {
+    const { data: existingKudos } = await serviceClient
+      .from('story_kudos')
+      .select('id')
+      .eq('story_id', typedStory.id)
+      .eq('client_hash', hashKudosClientToken(kudosToken))
+      .maybeSingle();
+    hasSentKudos = !!existingKudos;
+  }
+}
+const commentStatus = Astro.url.searchParams.get('comment_status');
+const commentError = Astro.url.searchParams.get('comment_error');
+const kudosStatus = Astro.url.searchParams.get('kudos_status');
+const kudosError = Astro.url.searchParams.get('kudos_error');
 ---
 
 <Layout
   title={typedStory ? `${typedStory.title} | A poc a poc i amb bona lletra` : t.stories.notFound}
   description={typedStory?.subtitle ?? t.stories.notFound}
 >
-  <PageSection class="story-page">
+  <StoryPageShell>
     <StoryArticle
       story={typedStory}
       notFoundLabel={t.stories.notFound}
@@ -50,11 +93,44 @@ const authorBio = typedAuthor?.bio?.trim() ? typedAuthor.bio : t.stories.authorB
       authorHandle={typedAuthor ? `@${typedAuthor.slug}` : null}
       authorBio={authorBio}
     />
-  </PageSection>
+
+    {typedStory && (
+      <div class="story-feedback">
+        {isKudosEnabled(typedStory.kudos_visibility) && (
+          <StoryKudos
+            storyId={typedStory.id}
+            storySlug={typedStory.slug}
+            visibility={typedStory.kudos_visibility}
+            count={kudosCount}
+            sent={hasSentKudos}
+            labels={t.kudos}
+            status={kudosStatus}
+            error={kudosError}
+          />
+        )}
+
+        <CommentsSection
+          storyId={typedStory.id}
+          storySlug={typedStory.slug}
+          commentsEnabled={typedStory.comments_enabled}
+          comments={typedComments}
+          labels={t.comments}
+          locale={locale}
+          status={commentStatus}
+          error={commentError}
+        />
+      </div>
+    )}
+  </StoryPageShell>
 </Layout>
 
 <style lang="scss">
-  .story-page {
-    padding-block: var(--space-12);
+  .story-feedback {
+    max-width: 720px;
+    margin-top: var(--space-6);
+    display: grid;
+    grid-template-columns: max-content max-content 1fr;
+    gap: var(--space-3);
+    align-items: center;
   }
 </style>

@@ -1,0 +1,180 @@
+---
+import type { SupportedLocale } from '../../config/site';
+import type { CommentRecord, CommentSubmissionError } from '../../lib/comments/types';
+import type { Messages } from '../../lib/i18n/types';
+import CommentForm from './CommentForm.astro';
+import CommentList from './CommentList.astro';
+
+interface Props {
+  storyId: string;
+  storySlug: string;
+  commentsEnabled: boolean;
+  comments: CommentRecord[];
+  labels: Messages['comments'];
+  locale: SupportedLocale;
+  status?: string | null;
+  error?: string | null;
+}
+
+const {
+  storyId,
+  storySlug,
+  commentsEnabled,
+  comments,
+  labels,
+  locale,
+  status = null,
+  error = null,
+} = Astro.props;
+
+const errorMessages: Record<CommentSubmissionError, string> = {
+  invalid_payload: labels.errorInvalid,
+  spam_detected: labels.errorSpam,
+  challenge_failed: labels.errorChallenge,
+  comments_closed: labels.errorClosed,
+  rate_limited: labels.errorRateLimited,
+  submit_failed: labels.errorGeneric,
+};
+const errorMessage = error ? errorMessages[error as CommentSubmissionError] ?? labels.errorGeneric : null;
+const shouldOpen = status === 'posted' || !!error;
+const triggerLabel = `${labels.title} (${comments.length})`;
+const panelId = `comments-panel-${storyId}`;
+---
+
+<section class="comments-section" aria-label={labels.title} data-comments-section>
+  {commentsEnabled && (
+    <>
+      <button
+        id="comments"
+        class="comments-trigger"
+        type="button"
+        aria-controls={panelId}
+        aria-expanded={shouldOpen ? 'true' : 'false'}
+        aria-label={triggerLabel}
+        title={triggerLabel}
+        data-comments-trigger
+      >
+        <span aria-hidden="true">💬</span>
+        <span>{comments.length}</span>
+      </button>
+
+      <div class="comments-panel" id={panelId} hidden={!shouldOpen} data-comments-panel>
+        {status === 'posted' && <p class="status ok">{labels.success}</p>}
+        {errorMessage && <p class="status error">{errorMessage}</p>}
+        <CommentList comments={comments} labels={labels} locale={locale} />
+        <CommentForm storyId={storyId} storySlug={storySlug} labels={labels} />
+      </div>
+    </>
+  )}
+</section>
+
+<style lang="scss">
+  .comments-section {
+    display: contents;
+  }
+
+  .comments-trigger {
+    width: auto;
+    min-width: 3rem;
+    height: 3rem;
+    border: 2px solid var(--color-text-muted);
+    border-radius: 999px;
+    background: var(--color-surface);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0 0.8rem;
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 700;
+    line-height: 1;
+    list-style: none;
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--transition-base),
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  .comments-trigger:hover,
+  .comments-trigger:focus-visible,
+  .comments-trigger[aria-expanded='true'] {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-soft-higher);
+    color: var(--color-text);
+    transform: translateY(-1px);
+  }
+
+  .comments-trigger:focus-visible {
+    outline: 3px solid var(--color-text);
+    outline-offset: 3px;
+  }
+
+  .comments-trigger.disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  .comments-panel {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    max-width: 720px;
+    margin-top: var(--space-1);
+    display: grid;
+    gap: var(--space-5);
+    animation: comments-open 160ms ease-out;
+  }
+
+  .comments-panel[hidden] {
+    display: none;
+  }
+
+  .status {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.92rem;
+  }
+
+  .status.ok {
+    color: #216530;
+  }
+
+  .status.error {
+    color: #a33a2d;
+  }
+
+  @keyframes comments-open {
+    from {
+      opacity: 0;
+      transform: translateY(-0.35rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const trigger = target.closest('[data-comments-trigger]');
+    const section = trigger?.closest('[data-comments-section]');
+    const panel = section?.querySelector('[data-comments-panel]');
+
+    if (!(trigger instanceof HTMLButtonElement) || !(panel instanceof HTMLElement)) {
+      return;
+    }
+
+    const nextOpen = trigger.getAttribute('aria-expanded') !== 'true';
+    trigger.setAttribute('aria-expanded', String(nextOpen));
+    panel.hidden = !nextOpen;
+  });
+</script>

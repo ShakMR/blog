@@ -1,0 +1,92 @@
+---
+import type { Messages } from '../../lib/i18n/types';
+import FormField from '../ui/FormField.astro';
+import SubmitButton from '../ui/SubmitButton.astro';
+
+interface Props {
+  storyId: string;
+  storySlug: string;
+  labels: Messages['comments'];
+}
+
+const { storyId, storySlug, labels } = Astro.props;
+const startedAt = Date.now();
+---
+
+<form class="comment-form" method="post" action="/api/comments/create">
+  <input type="hidden" name="storyId" value={storyId} />
+  <input type="hidden" name="storySlug" value={storySlug} />
+  <input type="hidden" name="startedAt" value={startedAt} />
+
+  <div class="honeypot" aria-hidden="true">
+    <label>
+      {labels.honeypot}
+      <input name="website" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <FormField label={labels.nameLabel}>
+    <input name="authorName" required maxlength="80" autocomplete="name" placeholder={labels.namePlaceholder} />
+  </FormField>
+
+  <FormField label={labels.bodyLabel}>
+    <textarea name="body" required maxlength="1200" rows="5" placeholder={labels.bodyPlaceholder}></textarea>
+  </FormField>
+
+  <FormField label={labels.challengeLabel} hint={labels.challengeHint}>
+    <input name="challengeAnswer" required inputmode="numeric" autocomplete="off" placeholder={labels.challengePlaceholder} />
+  </FormField>
+
+  <SubmitButton text={labels.submit} />
+</form>
+
+<style lang="scss">
+  .comment-form {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 34rem;
+  }
+
+  input,
+  textarea {
+    border: 1px solid var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.7rem;
+    font: inherit;
+    font-size: 0.94rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible {
+    border-color: var(--color-text);
+    outline: 3px solid var(--color-accent-soft);
+    outline-offset: 2px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 6.5rem;
+  }
+
+  .honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  :global(.submit-button) {
+    justify-self: start;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.9rem;
+  }
+</style>

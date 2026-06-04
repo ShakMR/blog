@@ -14,6 +14,7 @@ const saveStorySchema = z.object({
   bodyJson: z.string().optional(),
   status: z.enum(['draft', 'published']),
   commentsEnabled: z.enum(['true', 'false']).optional(),
+  kudosVisibility: z.enum(['disabled', 'private', 'public']),
   publishedAt: z.string().optional(),
   existingCoverPath: z.string().optional(),
 });
@@ -50,6 +51,7 @@ export const POST: APIRoute = async (context) => {
   const { accessToken, authorContext } = guard;
 
   const formData = await context.request.formData();
+  const commentsEnabled = formData.getAll('commentsEnabled').some((value) => value.toString() === 'true') ? 'true' : 'false';
   const parsed = saveStorySchema.safeParse({
     storyId: formData.get('storyId')?.toString(),
     title: formData.get('title')?.toString().trim(),
@@ -59,7 +61,8 @@ export const POST: APIRoute = async (context) => {
     bodyHtml: formData.get('bodyHtml')?.toString() ?? '',
     bodyJson: formData.get('bodyJson')?.toString() ?? '{}',
     status: formData.get('status')?.toString(),
-    commentsEnabled: formData.get('commentsEnabled')?.toString() ?? 'true',
+    commentsEnabled,
+    kudosVisibility: formData.get('kudosVisibility')?.toString() ?? 'private',
     publishedAt: formData.get('publishedAt')?.toString() ?? '',
     existingCoverPath: formData.get('existingCoverPath')?.toString() ?? '',
   });
@@ -140,6 +143,7 @@ export const POST: APIRoute = async (context) => {
     body_json: bodyJson,
     status: payload.status,
     comments_enabled: payload.commentsEnabled !== 'false',
+    kudos_visibility: payload.kudosVisibility,
     cover_image_path: coverPath,
     published_at: publishedAt,
   });

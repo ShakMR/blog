@@ -1,0 +1,66 @@
+---
+import type { SupportedLocale } from '../../config/site';
+import type { Messages } from '../../lib/i18n/types';
+import type { CommentRecord } from '../../lib/comments/types';
+import { formatDate } from '../../lib/stories/utils';
+import EmptyState from '../ui/EmptyState.astro';
+
+interface Props {
+  comments: CommentRecord[];
+  labels: Messages['comments'];
+  locale: SupportedLocale;
+}
+
+const { comments, labels, locale } = Astro.props;
+---
+
+{comments.length === 0 ? (
+  <EmptyState text={labels.empty} />
+) : (
+  <ol class="comment-list">
+    {comments.map((comment) => (
+      <li>
+        <article class="comment">
+          <header>
+            <strong>{comment.author_name}</strong>
+            <time datetime={comment.created_at}>{formatDate(comment.created_at, locale)}</time>
+          </header>
+          <p>{comment.body}</p>
+        </article>
+      </li>
+    ))}
+  </ol>
+)}
+
+<style lang="scss">
+  .comment-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .comment {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-4);
+  }
+
+  header {
+    display: flex;
+    gap: var(--space-3);
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  time {
+    color: var(--color-text-muted);
+    font-size: 0.84rem;
+  }
+
+  p {
+    margin: var(--space-2) 0 0;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+</style>

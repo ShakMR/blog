@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `primary`
+- Active branch: `uc6-comments-anon-antispam`
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -232,9 +232,9 @@ Note:
 
 Goals:
 
-- Comment form for anonymous users.
-- Comments enable/disable per story.
-- Anti-spam without internet dependency:
+- Comment form for anonymous users. In progress on `uc6-comments-anon-antispam`.
+- Comments enable/disable per story. Story editor flag already exists; public display is wired.
+- Anti-spam without internet dependency. In progress:
   - honeypot field
   - time-to-submit threshold
   - lightweight challenge question
@@ -326,6 +326,7 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- Start `uc6-comments-anon-antispam` from `primary`.
-- Implement anonymous comments with anti-spam checks and server-side rate limiting.
-- Reuse the existing story-level `comments_enabled` setting, already exposed in the author editor.
+- Complete review for `uc6-comments-anon-antispam`.
+- Treat kudos as the first reader feedback mechanism, with comments still available behind the existing story toggle.
+- Commit the feedback implementation after review.
+- Push the branch and open a PR for VQA.

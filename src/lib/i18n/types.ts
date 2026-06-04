@@ -36,6 +36,37 @@ export interface Messages {
     authorBioFallback: string;
     notFound: string;
   };
+  comments: {
+    title: string;
+    empty: string;
+    disabled: string;
+    formTitle: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    bodyLabel: string;
+    bodyPlaceholder: string;
+    challengeLabel: string;
+    challengeHint: string;
+    challengePlaceholder: string;
+    honeypot: string;
+    submit: string;
+    success: string;
+    errorInvalid: string;
+    errorSpam: string;
+    errorChallenge: string;
+    errorRateLimited: string;
+    errorClosed: string;
+    errorGeneric: string;
+  };
+  kudos: {
+    title: string;
+    publicDescription: string;
+    privateDescription: string;
+    count: string;
+    submit: string;
+    success: string;
+    errorGeneric: string;
+  };
   authorsPage: {
     title: string;
     placeholder: string;
@@ -107,6 +138,7 @@ export interface Messages {
     viewDraft: string;
     viewPublished: string;
     delete: string;
+    kudos: string;
     statusDraft: string;
     statusPublished: string;
   };
@@ -126,6 +158,12 @@ export interface Messages {
     fieldCover: string;
     coverCta: string;
     coverEmpty: string;
+    feedbackTitle: string;
+    feedbackDescription: string;
+    kudosVisibility: string;
+    kudosDisabled: string;
+    kudosPrivate: string;
+    kudosPublic: string;
     commentsEnabled: string;
     status: string;
     statusDraft: string;
