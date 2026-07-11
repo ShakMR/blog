@@ -71,6 +71,19 @@ jobs:
               | tr -d '"'
           } > .env.local
 
+      - name: Debug env (temporary)
+        run: |
+          echo "status -o env keys: $(supabase status -o env | cut -d= -f1 | tr '\n' ' ')"
+          echo ".env.local keys:    $(cut -d= -f1 .env.local | tr '\n' ' ')"
+          node -e '
+            const fs=require("fs");
+            for (const line of fs.readFileSync(".env.local","utf8").split("\n")) {
+              const i=line.indexOf("="); if(i<0) continue;
+              const k=line.slice(0,i), v=line.slice(i+1); let role="";
+              const p=v.split("."); if(p.length===3){ try{ role=JSON.parse(Buffer.from(p[1],"base64").toString()).role }catch{} }
+              console.log(k, "len="+v.length, role?("role="+role):"", "head="+v.slice(0,10));
+            }'
+
       - name: Integration tests
         run: npm run test:integration
 
