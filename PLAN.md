@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `ci-workflow` (CI foundation: GitHub Actions running check + unit tests)
+- Active branch: `ci-integration-e2e` (integration + e2e test suites, added as separate CI jobs)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -12,9 +12,10 @@
   - ~~Phase 5 - UC4 Stories by Author~~
   - ~~Phase 6 - UC6 Comments + Kudos Feedback~~ (PR #8)
   - ~~Clickable story cards (UX polish)~~ (PR #9)
+  - ~~CI foundation: check + unit tests~~ (PR #10)
 - Still pending as standalone milestones:
   - Phase 7 - hardening / release prep
-  - Deferred: e2e/integration test stack, feed pagination, automated invite email delivery
+  - Deferred: feed pagination, automated invite email delivery
 
 ## 1) Product Scope (v1)
 
@@ -110,7 +111,8 @@ Planned branches:
 5. ~~`uc4-publications-by-author`~~ (completed as supporting work on `uc2-uc3-editor-and-feed`)
 6. ~~`uc6-comments-anon-antispam`~~ (merged by PR #8)
 7. ~~story card click targets~~ (UX polish, merged by PR #9)
-8. `ci-workflow` (current — CI foundation, outside the original UC roadmap)
+8. ~~`ci-workflow`~~ (CI foundation, merged by PR #10)
+9. `ci-integration-e2e` (current — integration + e2e suites)
 
 Rules:
 
@@ -293,11 +295,14 @@ Acceptance:
   - post comment with anti-spam checks
 - Fixture-based seeds for deterministic local/offline testing.
 
-Current status:
+Current status — three layers, three CI jobs (`.github/workflows/ci.yml`, Node 20):
 
-- Only unit tests exist today (Vitest): stories utils, auth session, comments/kudos validation, i18n, email relay.
-- Integration (DB/RLS + API routes) and e2e stacks are still unselected — the largest coverage gap, given RLS-heavy access rules and the anti-spam heuristics are untested end to end.
-- CI runs `astro check` + Vitest on every PR and on pushes to `primary` via GitHub Actions (`.github/workflows/ci.yml`, Node 20). Integration/e2e are still out of CI until that stack is selected.
+- Unit (`npm run test`, Vitest): stories utils, auth session, comments/kudos validation, i18n, email relay. Fast, no services.
+- Integration (`npm run test:integration`, Vitest + real Supabase): RLS boundaries for stories/comments/kudos, and the comments/kudos API handlers exercised for honeypot, timing, challenge, rate limiting, cookie dedup, disabled/closed, and cross-origin.
+- E2E (`npm run test:e2e`, Playwright + dev server + seeded Supabase): public feed → card click → story, anonymous comment, kudos, and the authed login → publish → feed journey.
+- The integration/e2e jobs boot a Supabase stack via `supabase/setup-cli`; e2e seeds a fixture with `npm run seed:test`.
+
+Bug caught by the RLS suite: `app.is_admin()` used a reserved-word variable (`current_role`) and always returned false, so admins never gained admin rights through RLS (masked because admin actions use the service role). Fixed in migration `20260711120000_fix_is_admin_reserved_word.sql`.
 
 ## 8) SOLID and Code Quality Guardrails
 
@@ -353,9 +358,9 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- UC6 (comments + kudos) is merged (PR #8); clickable story cards merged (PR #9).
-- CI foundation added on `ci-workflow`: GitHub Actions runs `astro check` + Vitest on every PR and on pushes to `primary`.
+- Testing is now three layers (unit + integration + e2e), each a separate CI job; the RLS suite already caught and fixed the `app.is_admin()` bug.
+- On `ci-integration-e2e`: integration (Vitest + Supabase) and e2e (Playwright) suites, plus a seed script and two new CI jobs.
 - Next priorities:
-  1. Extend CI with an e2e/integration test stack (Playwright) covering RLS and anti-spam flows against a CI Supabase stack.
-  2. Phase 7 hardening: accessibility, i18n text pass, SEO/robots for draft vs published, observability/error handling.
-  3. Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
+  1. Phase 7 hardening: accessibility, i18n text pass, SEO/robots for draft vs published, observability/error handling.
+  2. Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
+  3. Broaden e2e (admin invite flow, draft privacy) and make the `check-test` job a required status check once the heavier jobs are stable.

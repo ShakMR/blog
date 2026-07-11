@@ -3,6 +3,11 @@
 .vercel/
 coverage/
 
+# test artifacts
+/test-results/
+/playwright-report/
+/tests/e2e/.auth/
+
 # generated types
 /.astro/
 
