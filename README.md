@@ -1,5 +1,7 @@
 # A poc a poc i amb bona lletra
 
+[![CI](https://github.com/ShakMR/blog/actions/workflows/ci.yml/badge.svg?branch=primary)](https://github.com/ShakMR/blog/actions/workflows/ci.yml)
+
 Infra bootstrap for the new blog platform.
 
 ## Stack
