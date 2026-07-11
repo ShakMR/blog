@@ -60,6 +60,11 @@ jobs:
       - name: Start Supabase
         run: supabase start
 
+      - name: Apply CI database grants
+        run: |
+          docker exec -i "$(docker ps --filter name=supabase_db --format '{{.Names}}' | head -1)" \
+            psql -U postgres -d postgres -v ON_ERROR_STOP=1 < .github/ci/grants.sql
+
       - name: Write local env from Supabase
         run: |
           {
@@ -97,6 +102,11 @@ jobs:
 
       - name: Start Supabase
         run: supabase start
+
+      - name: Apply CI database grants
+        run: |
+          docker exec -i "$(docker ps --filter name=supabase_db --format '{{.Names}}' | head -1)" \
+            psql -U postgres -d postgres -v ON_ERROR_STOP=1 < .github/ci/grants.sql
 
       - name: Write local env from Supabase
         run: |
