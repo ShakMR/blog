@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `uc6-comments-anon-antispam`
+- Active branch: `no-jira_story-card-click-targets` (fresh off `primary`, UX polish for clickable story cards)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -10,9 +10,10 @@
   - ~~Phase 3 - UC2/2.1 Author Editor + Publish~~
   - ~~Phase 4 - UC3 Newest Publications~~
   - ~~Phase 5 - UC4 Stories by Author~~
+  - ~~Phase 6 - UC6 Comments + Kudos Feedback~~ (PR #8)
 - Still pending as standalone milestones:
-  - UC6
-  - hardening / release prep
+  - Phase 7 - hardening / release prep
+  - Deferred: e2e/integration test stack, CI checks, feed pagination, automated invite email delivery
 
 ## 1) Product Scope (v1)
 
@@ -24,8 +25,9 @@
 3. ~~UC3: As a User I want to see the newest publication by any author.~~
 4. ~~UC5: As Admin I want to create new authors (invite email flow).~~
 5. ~~UC4: As a User I want to see all publication by an Author.~~
-6. UC6: As a User I want to add comments to stories (anonymous allowed + anti-spam challenge).
-  6.1. UC6.1: As Author I want to disable/enable comments in my story.
+6. ~~UC6: As a User I want to add comments to stories (anonymous allowed + anti-spam challenge).~~
+  6.1. ~~UC6.1: As Author I want to disable/enable comments in my story.~~
+  6.2. ~~UC6.2: As a User I want to send kudos as lightweight reader feedback (disabled/private/public per story).~~
 
 ### Confirmed product decisions
 
@@ -37,8 +39,9 @@
 - Authors can edit and delete published stories.
 - Stories must display a last edit timestamp.
 - No comment moderation in v1.
+- Reader kudos are the primary lightweight feedback mechanism, with per-story visibility (`disabled`/`private`/`public`); comments remain available behind the per-story toggle.
 - UI is multilingual; stories can be in Spanish.
-- Story fields: title, subtitle, tags, body, publication date (past dates allowed), cover image, comments on/off.
+- Story fields: title, subtitle, tags, body, publication date (past dates allowed), cover image, comments on/off, kudos visibility.
 
 ## 2) Architecture and Stack
 
@@ -78,10 +81,11 @@ Tables/entities (to refine in migrations):
 
 - `profiles`: user profile, role (`admin` or `author`), display data, locale.
 - `authors`: public author data (slug, bio, avatar, links).
-- `stories`: title, subtitle, slug, body JSON (Tiptap), rendered HTML, status (`draft`/`published`), cover image path, comments_enabled, published_at, updated_at.
+- `stories`: title, subtitle, slug, body JSON (Tiptap), rendered HTML, status (`draft`/`published`), cover image path, comments_enabled, kudos_visibility (`disabled`/`private`/`public`), published_at, updated_at.
 - `story_tags` + `tags`: normalized tagging.
-- `comments`: story_id, author_name (or anon), body, created_at, anti-spam metadata.
-- `comment_rate_limits` (or equivalent strategy): anti-spam counters.
+- `comments`: story_id, author_name (or anon), body, created_at, anti-spam metadata (source_ip, user_agent).
+- `comment_rate_limits`: per-key (`comments:<story>:<ip>`) attempt counters with a rolling window.
+- `story_kudos`: story_id, client_hash (cookie-token hash for dedup), source_ip, user_agent, created_at; unique per (story_id, client_hash).
 
 RLS policy goals:
 
@@ -90,6 +94,7 @@ RLS policy goals:
 - Published stories are publicly readable.
 - Draft stories readable only by owner/admin and via signed draft token URL strategy.
 - Comments insert allowed under anti-spam checks and per-story setting.
+- Kudos insert allowed on published stories with kudos enabled; only the owning author/admin can read raw kudos rows.
 
 ## 5) Branching and Delivery Strategy
 
@@ -102,7 +107,8 @@ Planned branches:
 3. ~~`uc2-uc3-editor-and-feed`~~
 4. ~~`uc5-admin-create-authors`~~
 5. ~~`uc4-publications-by-author`~~ (completed as supporting work on `uc2-uc3-editor-and-feed`)
-6. `uc6-comments-anon-antispam`
+6. ~~`uc6-comments-anon-antispam`~~ (merged by PR #8)
+7. `no-jira_story-card-click-targets` (current — UX polish, outside the original UC roadmap)
 
 Rules:
 
@@ -228,23 +234,36 @@ Note:
 - Public author index and author detail pages were implemented on `uc2-uc3-editor-and-feed`, merged by PR #3.
 - Author labels are now gender-aware, backed by migration `20260410170000_public_author_profiles.sql`.
 
-## Phase 6 - UC6 Anonymous Comments + Anti-Spam (2-3 days)
+## ~~Phase 6 - UC6 Anonymous Comments + Kudos + Anti-Spam~~ (2-3 days)
 
 Goals:
 
-- Comment form for anonymous users. In progress on `uc6-comments-anon-antispam`.
-- Comments enable/disable per story. Story editor flag already exists; public display is wired.
-- Anti-spam without internet dependency. In progress:
-  - honeypot field
-  - time-to-submit threshold
-  - lightweight challenge question
-  - server-side rate limiting
+- ~~Comment form for anonymous users.~~
+- ~~Comments enable/disable per story.~~
+- ~~Reader kudos with per-story visibility (`disabled`/`private`/`public`) and cookie-based dedup.~~
+- ~~Anti-spam without internet dependency:~~
+  - ~~honeypot field~~
+  - ~~time-to-submit threshold (min/max)~~
+  - ~~lightweight challenge question~~
+  - ~~server-side IP rate limiting~~
+
+Implemented on `uc6-comments-anon-antispam`, merged by PR #8:
+
+- Anonymous comment form with honeypot, time-to-submit window, static challenge, and IP rate limiting via `comment_rate_limits`.
+- Per-story kudos button (`story_kudos` table + `kudos_visibility` column) with private/public counts and progressive-enhancement JS.
+- Story feedback settings panel unifying the comments toggle and kudos visibility.
+- Migrations `20260604003000_comments_indexes.sql` and `20260604004500_story_kudos.sql`.
 
 Acceptance:
 
-- User can submit valid comment on enabled stories.
-- Disabled comments block submissions.
-- Spam heuristics block obvious abuse patterns.
+- ~~User can submit valid comment on enabled stories.~~
+- ~~Disabled comments block submissions.~~
+- ~~Spam heuristics block obvious abuse patterns.~~
+
+Known follow-ups (deferred, not blockers):
+
+- Challenge answer is currently static (`5`); rotate or randomize before a public launch.
+- `comment_rate_limits` rows are never garbage-collected.
 
 ## Phase 7 - Hardening and Release Prep (1-2 days)
 
@@ -271,6 +290,12 @@ Acceptance:
   - view newest feed
   - post comment with anti-spam checks
 - Fixture-based seeds for deterministic local/offline testing.
+
+Current status:
+
+- Only unit tests exist today (Vitest): stories utils, auth session, comments/kudos validation, i18n, email relay.
+- Integration (DB/RLS + API routes) and e2e stacks are still unselected — the largest coverage gap, given RLS-heavy access rules and the anti-spam heuristics are untested end to end.
+- No CI workflow is configured yet (`.github/workflows` is empty).
 
 ## 8) SOLID and Code Quality Guardrails
 
@@ -326,7 +351,9 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- Complete review for `uc6-comments-anon-antispam`.
-- Treat kudos as the first reader feedback mechanism, with comments still available behind the existing story toggle.
-- Commit the feedback implementation after review.
-- Push the branch and open a PR for VQA.
+- UC6 (comments + kudos) is merged (PR #8); kudos is the primary reader feedback mechanism, with comments behind the per-story toggle.
+- Current branch `no-jira_story-card-click-targets`: make public story cards fully clickable (whole-card click target, not just the title).
+- Next priorities after that:
+  1. Select and wire an e2e/integration test stack (Playwright) covering RLS and anti-spam flows; add a CI workflow running `check` + `test`.
+  2. Phase 7 hardening: accessibility, i18n text pass, SEO/robots for draft vs published, observability/error handling.
+  3. Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.

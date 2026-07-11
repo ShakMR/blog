@@ -42,7 +42,7 @@ const shouldShowPublishDate = !!publishedAtLabel && !!publishedAtValue;
 const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAndEditedSameDay;
 ---
 
-<article class:list={['story-card', variant]}>
+<article class:list={['story-card', variant, { 'is-clickable': !!titleHref }]}>
   {coverUrl && <img src={coverUrl} alt={coverAlt} loading="lazy" />}
   <div class="story-content">
     {statusLabel && <p class="pill">{statusLabel}</p>}
@@ -73,6 +73,7 @@ const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAn
 
 <style lang="scss">
   .story-card {
+    position: relative;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -128,7 +129,23 @@ const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAn
     text-decoration: none;
   }
 
+  /* Stretch the title link across the whole card so the entire card is
+     a single click target, while keeping the title as the one semantic link. */
+  .is-clickable .title-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .is-clickable:hover .title-link {
+    text-decoration: underline;
+    text-underline-offset: 0.1em;
+  }
+
   .meta-link {
+    position: relative;
+    z-index: 1;
     text-decoration: underline;
     text-underline-offset: 0.1em;
   }
@@ -181,6 +198,8 @@ const shouldShowUpdateDate = !!updatedAtLabel && !!updatedAtValue && publishedAn
   }
 
   .actions {
+    position: relative;
+    z-index: 1;
     margin-top: var(--space-4);
     display: flex;
     flex-wrap: wrap;
