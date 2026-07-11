@@ -79,6 +79,9 @@ const kudosError = Astro.url.searchParams.get('kudos_error');
 <Layout
   title={typedStory ? `${typedStory.title} | A poc a poc i amb bona lletra` : t.stories.notFound}
   description={typedStory?.subtitle ?? t.stories.notFound}
+  image={coverUrl}
+  type="article"
+  robots={typedStory ? undefined : 'noindex,nofollow'}
 >
   <StoryPageShell>
     <StoryArticle
