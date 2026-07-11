@@ -66,6 +66,9 @@ After first dependency and Docker image download, local testing works offline:
 - `npm run dev`: start Astro dev server
 - `npm run check`: type/content checks
 - `npm run test`: run unit tests
+- `npm run test:integration`: run integration tests (needs a local Supabase stack)
+- `npm run test:e2e`: run Playwright e2e tests (needs Supabase + seeded fixture)
+- `npm run seed:test`: seed the deterministic e2e fixture (author + published story)
 - `npm run build`: check + production build
 - `npm run supabase:start`: boot local Supabase
 - `npm run supabase:stop`: stop local Supabase
@@ -74,20 +77,35 @@ After first dependency and Docker image download, local testing works offline:
 - `npm run user:create-local-admin -- <email> <password> [displayName] [slug]`: create/reset local admin user with author capabilities
 - `npm run user:create-local-author -- <email> <password> [displayName] [slug]`: create/reset local author user
 
+## Testing
+
+Three layers:
+
+- **Unit** (`npm run test`, Vitest) — pure domain/validation logic; no services.
+- **Integration** (`npm run test:integration`, Vitest + real Supabase) — RLS access boundaries for stories/comments/kudos and the comments/kudos API handlers (honeypot, timing, challenge, rate limiting, cookie dedup). Needs the local Supabase stack running.
+- **E2E** (`npm run test:e2e`, Playwright) — public feed/card/comment/kudos flows and the authed login → publish journey. Run `npm run seed:test` first, and make sure the app builds against the local Supabase stack.
+
+Local e2e quickstart:
+
+```bash
+npm run supabase:start
+npm run seed:test
+npm run test:e2e
+```
+
 ## Continuous integration
 
-GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and on pushes to `primary`:
+GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and on pushes to `primary`, as three parallel jobs (Node 20, npm caching):
 
-- `npm run check` — Astro type/content check
-- `npm run test` — Vitest unit suite
-
-Runs on Node 20 with npm caching; no external services or secrets required.
+- **Check & unit tests** — `npm run check` + `npm run test`. Fast, no services.
+- **Integration (Supabase)** — boots a Supabase stack via `supabase/setup-cli`, then `npm run test:integration`.
+- **E2E (Playwright)** — boots Supabase, seeds the fixture, installs Chromium, then `npm run test:e2e`.
 
 ## Current status
 
-- Latest merged: reader feedback (anonymous comments + kudos, PR #8) and fully clickable story cards (PR #9).
+- Latest merged: reader feedback (anonymous comments + kudos, PR #8), fully clickable story cards (PR #9), and CI foundation (PR #10).
 - Features: author login, admin-invited authors, WYSIWYG editor with draft/publish + cover images, public newest-publications feed, per-author pages, and reader comments + kudos.
-- Next: extend CI with e2e/integration tests, then Phase 7 hardening. See `PLAN.md`.
+- Next: Phase 7 hardening (accessibility, i18n, SEO/robots). See `PLAN.md`.
 
 ## UC5 local admin flow
 
