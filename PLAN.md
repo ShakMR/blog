@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `no-jira_story-card-click-targets` (fresh off `primary`, UX polish for clickable story cards)
+- Active branch: `ci-workflow` (CI foundation: GitHub Actions running check + unit tests)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -11,9 +11,10 @@
   - ~~Phase 4 - UC3 Newest Publications~~
   - ~~Phase 5 - UC4 Stories by Author~~
   - ~~Phase 6 - UC6 Comments + Kudos Feedback~~ (PR #8)
+  - ~~Clickable story cards (UX polish)~~ (PR #9)
 - Still pending as standalone milestones:
   - Phase 7 - hardening / release prep
-  - Deferred: e2e/integration test stack, CI checks, feed pagination, automated invite email delivery
+  - Deferred: e2e/integration test stack, feed pagination, automated invite email delivery
 
 ## 1) Product Scope (v1)
 
@@ -108,7 +109,8 @@ Planned branches:
 4. ~~`uc5-admin-create-authors`~~
 5. ~~`uc4-publications-by-author`~~ (completed as supporting work on `uc2-uc3-editor-and-feed`)
 6. ~~`uc6-comments-anon-antispam`~~ (merged by PR #8)
-7. `no-jira_story-card-click-targets` (current — UX polish, outside the original UC roadmap)
+7. ~~story card click targets~~ (UX polish, merged by PR #9)
+8. `ci-workflow` (current — CI foundation, outside the original UC roadmap)
 
 Rules:
 
@@ -295,7 +297,7 @@ Current status:
 
 - Only unit tests exist today (Vitest): stories utils, auth session, comments/kudos validation, i18n, email relay.
 - Integration (DB/RLS + API routes) and e2e stacks are still unselected — the largest coverage gap, given RLS-heavy access rules and the anti-spam heuristics are untested end to end.
-- No CI workflow is configured yet (`.github/workflows` is empty).
+- CI runs `astro check` + Vitest on every PR and on pushes to `primary` via GitHub Actions (`.github/workflows/ci.yml`, Node 20). Integration/e2e are still out of CI until that stack is selected.
 
 ## 8) SOLID and Code Quality Guardrails
 
@@ -351,9 +353,9 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- UC6 (comments + kudos) is merged (PR #8); kudos is the primary reader feedback mechanism, with comments behind the per-story toggle.
-- Current branch `no-jira_story-card-click-targets`: make public story cards fully clickable (whole-card click target, not just the title).
-- Next priorities after that:
-  1. Select and wire an e2e/integration test stack (Playwright) covering RLS and anti-spam flows; add a CI workflow running `check` + `test`.
+- UC6 (comments + kudos) is merged (PR #8); clickable story cards merged (PR #9).
+- CI foundation added on `ci-workflow`: GitHub Actions runs `astro check` + Vitest on every PR and on pushes to `primary`.
+- Next priorities:
+  1. Extend CI with an e2e/integration test stack (Playwright) covering RLS and anti-spam flows against a CI Supabase stack.
   2. Phase 7 hardening: accessibility, i18n text pass, SEO/robots for draft vs published, observability/error handling.
   3. Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.

@@ -74,10 +74,20 @@ After first dependency and Docker image download, local testing works offline:
 - `npm run user:create-local-admin -- <email> <password> [displayName] [slug]`: create/reset local admin user with author capabilities
 - `npm run user:create-local-author -- <email> <password> [displayName] [slug]`: create/reset local author user
 
+## Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and on pushes to `primary`:
+
+- `npm run check` — Astro type/content check
+- `npm run test` — Vitest unit suite
+
+Runs on Node 20 with npm caching; no external services or secrets required.
+
 ## Current status
 
-- Phase: `uc2-uc3-editor-and-feed`
-- Current features: author editor/publish flow + public newest publications feed
+- Latest merged: reader feedback (anonymous comments + kudos, PR #8) and fully clickable story cards (PR #9).
+- Features: author login, admin-invited authors, WYSIWYG editor with draft/publish + cover images, public newest-publications feed, per-author pages, and reader comments + kudos.
+- Next: extend CI with e2e/integration tests, then Phase 7 hardening. See `PLAN.md`.
 
 ## UC5 local admin flow
 
