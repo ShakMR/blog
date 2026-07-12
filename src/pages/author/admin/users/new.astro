@@ -30,6 +30,7 @@ if (!context || context.profile.role !== 'admin') {
 }
 
 const adminStatus = Astro.url.searchParams.get('admin_status');
+const emailed = Astro.url.searchParams.get('emailed') === '1';
 const createdEmail = Astro.url.searchParams.get('created');
 const createdSlug = Astro.url.searchParams.get('slug');
 const adminError = Astro.url.searchParams.get('admin_error');
@@ -69,7 +70,7 @@ if (invitePreviewCookie) {
         <Message tone="ok">
           {t.adminUsers.success}: <strong>{createdEmail}</strong> (<code>{createdSlugLabel}</code>).
           {' '}
-          {t.adminUsers.successPendingEmail}
+          {emailed ? t.adminUsers.successEmailed : t.adminUsers.successPendingEmail}
         </Message>
       )}
       {errorMessage && <Message text={errorMessage} tone="error" />}

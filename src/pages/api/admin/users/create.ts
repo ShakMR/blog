@@ -5,7 +5,7 @@ import {
   parseCreateAuthorAccountInput,
 } from '../../../../lib/admin/users';
 import { requireAdminContext } from '../../../../lib/auth/guards';
-import { buildAuthorWelcomeEmail } from '../../../../lib/email/relay';
+import { buildAuthorWelcomeEmail, isInviteEmailConfigured, sendInviteEmail } from '../../../../lib/email/relay';
 
 const createAuthorPath = '/author/admin/users/new';
 
@@ -31,29 +31,46 @@ export const POST: APIRoute = async (context) => {
 
   try {
     const created = await createAuthorAccount(parsed.data);
-    const emailPreview = buildAuthorWelcomeEmail({
+    const emailMessage = buildAuthorWelcomeEmail({
       email: created.email,
       displayName: created.displayName,
       temporaryPassword: parsed.data.password,
     });
 
-    context.cookies.set('admin-invite-preview', JSON.stringify({
-      toEmail: created.email,
-      subject: emailPreview.subject,
-      text: emailPreview.text,
-    }), {
-      httpOnly: true,
-      path: createAuthorPath,
-      sameSite: 'lax',
-      secure: import.meta.env.PROD,
-      maxAge: 60 * 10,
-    });
+    // Send automatically when Resend is configured; otherwise fall back to the
+    // manual draft. A send failure also falls back rather than losing the invite.
+    let emailed = false;
+    if (isInviteEmailConfigured()) {
+      try {
+        await sendInviteEmail(emailMessage);
+        emailed = true;
+      } catch (deliveryError) {
+        console.error('Invite email delivery failed; showing manual draft.', deliveryError);
+      }
+    }
+
+    if (!emailed) {
+      context.cookies.set('admin-invite-preview', JSON.stringify({
+        toEmail: created.email,
+        subject: emailMessage.subject,
+        text: emailMessage.text,
+      }), {
+        httpOnly: true,
+        path: createAuthorPath,
+        sameSite: 'lax',
+        secure: import.meta.env.PROD,
+        maxAge: 60 * 10,
+      });
+    }
 
     const search = new URLSearchParams({
       admin_status: 'user_created',
       created: created.email,
       slug: created.slug,
     });
+    if (emailed) {
+      search.set('emailed', '1');
+    }
 
     return context.redirect(`${createAuthorPath}?${search.toString()}`, 302);
   } catch (error) {

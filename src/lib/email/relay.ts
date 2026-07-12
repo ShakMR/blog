@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
-const emailRelayEnvSchema = z.object({
-  GMAIL_RELAY_URL: z.string().url().optional(),
-  GMAIL_RELAY_TOKEN: z.string().min(1).optional(),
-  GMAIL_RELAY_FROM_EMAIL: z.string().email().optional(),
-  GMAIL_RELAY_FROM_NAME: z.string().min(1).optional(),
-  GMAIL_RELAY_TIMEOUT_MS: z.coerce.number().int().positive().optional(),
+const emailEnvSchema = z.object({
+  RESEND_API_KEY: z.string().min(1).optional(),
+  RESEND_FROM: z.string().min(1).optional(),
+  RESEND_TIMEOUT_MS: z.coerce.number().int().positive().optional(),
   PUBLIC_APP_URL: z.string().url().optional().default('http://localhost:4321'),
 });
 
-export interface RelayEmailMessage {
+const RESEND_ENDPOINT = 'https://api.resend.com/emails';
+
+export interface InviteEmailMessage {
   toEmail: string;
   toName?: string;
   subject: string;
@@ -17,38 +17,31 @@ export interface RelayEmailMessage {
   html: string;
 }
 
-export class EmailRelayError extends Error {
-  code: 'misconfigured' | 'delivery_failed';
+export class EmailDeliveryError extends Error {
+  code: 'not_configured' | 'delivery_failed';
 
-  constructor(code: 'misconfigured' | 'delivery_failed', message: string) {
+  constructor(code: 'not_configured' | 'delivery_failed', message: string) {
     super(message);
     this.code = code;
   }
 }
 
-function getEmailRelayEnv() {
-  return emailRelayEnvSchema.parse(import.meta.env);
+function getEmailEnv() {
+  return emailEnvSchema.parse(import.meta.env);
 }
 
-export function getEmailRelayStatus() {
-  const env = getEmailRelayEnv();
-  const hasAnyRelayConfig = Boolean(
-    env.GMAIL_RELAY_URL || env.GMAIL_RELAY_TOKEN || env.GMAIL_RELAY_FROM_EMAIL || env.GMAIL_RELAY_FROM_NAME,
-  );
-  const isConfigured = Boolean(env.GMAIL_RELAY_URL && env.GMAIL_RELAY_FROM_EMAIL);
-
-  return {
-    hasAnyRelayConfig,
-    isConfigured,
-  };
+/** True when Resend is configured to actually deliver invite emails. */
+export function isInviteEmailConfigured(): boolean {
+  const env = getEmailEnv();
+  return Boolean(env.RESEND_API_KEY && env.RESEND_FROM);
 }
 
 export function buildAuthorWelcomeEmail(input: {
   email: string;
   displayName: string;
   temporaryPassword: string;
-}) {
-  const env = getEmailRelayEnv();
+}): InviteEmailMessage {
+  const env = getEmailEnv();
   const loginUrl = new URL('/auth/login', env.PUBLIC_APP_URL).toString();
 
   return {
@@ -75,42 +68,35 @@ export function buildAuthorWelcomeEmail(input: {
       '</ul>',
       '<p>Por seguridad, cambia la contrasena despues de iniciar sesion.</p>',
     ].join(''),
-  } satisfies RelayEmailMessage;
+  };
 }
 
-export async function sendRelayEmail(message: RelayEmailMessage) {
-  const env = getEmailRelayEnv();
+/** Deliver an invite email through Resend. Throws EmailDeliveryError on failure. */
+export async function sendInviteEmail(message: InviteEmailMessage): Promise<void> {
+  const env = getEmailEnv();
 
-  if (!env.GMAIL_RELAY_URL || !env.GMAIL_RELAY_FROM_EMAIL) {
-    throw new EmailRelayError('misconfigured', 'Missing GMAIL_RELAY_URL or GMAIL_RELAY_FROM_EMAIL.');
+  if (!env.RESEND_API_KEY || !env.RESEND_FROM) {
+    throw new EmailDeliveryError('not_configured', 'Missing RESEND_API_KEY or RESEND_FROM.');
   }
 
-  const response = await fetch(env.GMAIL_RELAY_URL, {
+  const response = await fetch(RESEND_ENDPOINT, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
-      ...(env.GMAIL_RELAY_TOKEN ? { authorization: `Bearer ${env.GMAIL_RELAY_TOKEN}` } : {}),
+      authorization: `Bearer ${env.RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: {
-        email: env.GMAIL_RELAY_FROM_EMAIL,
-        name: env.GMAIL_RELAY_FROM_NAME,
-      },
-      to: [
-        {
-          email: message.toEmail,
-          name: message.toName,
-        },
-      ],
+      from: env.RESEND_FROM,
+      to: [message.toEmail],
       subject: message.subject,
       text: message.text,
       html: message.html,
     }),
-    signal: AbortSignal.timeout(env.GMAIL_RELAY_TIMEOUT_MS ?? 10000),
+    signal: AbortSignal.timeout(env.RESEND_TIMEOUT_MS ?? 10000),
   });
 
   if (!response.ok) {
-    throw new EmailRelayError('delivery_failed', `Relay returned ${response.status}.`);
+    throw new EmailDeliveryError('delivery_failed', `Resend returned ${response.status}.`);
   }
 }
 
