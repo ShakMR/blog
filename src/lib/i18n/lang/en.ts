@@ -40,6 +40,12 @@ const en: Messages = {
     notFound: 'Story not found.',
     coverAlt: 'Cover of {title}',
   },
+  pagination: {
+    previous: 'Previous',
+    next: 'Next',
+    page: 'Page {page}',
+    label: 'Pagination',
+  },
   comments: {
     title: 'Comments',
     empty: 'There are no comments yet.',

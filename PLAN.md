@@ -17,7 +17,7 @@
   - ~~SEO/meta + draft privacy + indexing opt-out~~ (PR #12)
 - Still pending as standalone milestones:
   - Phase 7 - hardening / release prep (a11y in progress; i18n + observability remain)
-  - Deferred: feed pagination, automated invite email delivery
+  - Deferred: automated invite email delivery (feed pagination shipped on `feed-pagination`)
 
 ## 1) Product Scope (v1)
 
