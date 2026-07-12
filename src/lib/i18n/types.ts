@@ -185,4 +185,11 @@ export interface Messages {
     notFound: string;
     lastEdit: string;
   };
+  errors: {
+    notFoundTitle: string;
+    notFoundBody: string;
+    serverErrorTitle: string;
+    serverErrorBody: string;
+    backHome: string;
+  };
 }

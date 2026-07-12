@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageSection from '../components/layout/PageSection.astro';
+import PageHeader from '../components/ui/PageHeader.astro';
+import ButtonLink from '../components/ui/ButtonLink.astro';
+import { getMessages, resolveRequestLocale } from '../lib/i18n';
+
+const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+const t = getMessages(locale);
+---
+
+<Layout
+  title={`${t.errors.notFoundTitle} | A poc a poc i amb bona lletra`}
+  description={t.errors.notFoundBody}
+  robots="noindex,nofollow"
+>
+  <PageSection class="error-page">
+    <PageHeader eyebrow="404" title={t.errors.notFoundTitle} description={t.errors.notFoundBody} />
+    <ButtonLink href="/" text={t.errors.backHome} variant="primary" />
+  </PageSection>
+</Layout>
+
+<style lang="scss">
+  .error-page {
+    padding-block: var(--space-12);
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+  }
+</style>

@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `i18n-pass` (Phase 7: i18n text sweep) — stacked on `accessibility-pass` (PR #13)
+- Active branch: `error-handling` (Phase 7: 404/500 pages + API error handling)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -15,9 +15,10 @@
   - ~~CI foundation: check + unit tests~~ (PR #10)
   - ~~Integration + e2e test suites~~ (PR #11)
   - ~~SEO/meta + draft privacy + indexing opt-out~~ (PR #12)
+  - ~~Accessibility + i18n sweep~~ (PR #14; #13 closed as superseded)
 - Still pending as standalone milestones:
-  - Phase 7 - hardening / release prep (a11y in progress; i18n + observability remain)
-  - Deferred: feed pagination, automated invite email delivery
+  - Phase 7 - hardening / release prep (error handling in progress on `error-handling`; then complete)
+  - Deferred: feed pagination, `comment_rate_limits` GC, stronger comment challenge, automated invite email delivery
 
 ## 1) Product Scope (v1)
 
@@ -116,8 +117,9 @@ Planned branches:
 8. ~~`ci-workflow`~~ (CI foundation, merged by PR #10)
 9. ~~`ci-integration-e2e`~~ (integration + e2e suites, merged by PR #11)
 10. ~~`seo-draft-privacy`~~ (Phase 7: SEO/meta + draft privacy, merged by PR #12)
-11. `accessibility-pass` (Phase 7: accessibility, PR #13)
-12. `i18n-pass` (current — Phase 7: i18n text sweep, stacked on PR #13)
+11. ~~`accessibility-pass`~~ (Phase 7: accessibility — closed, superseded by PR #14)
+12. ~~`i18n-pass`~~ (Phase 7: accessibility + i18n, merged by PR #14)
+13. `error-handling` (current — Phase 7: 404/500 + API error handling)
 
 Rules:
 
@@ -281,7 +283,13 @@ Goals:
 - ~~Accessibility checks.~~ (accessibility-pass, PR #13)
 - ~~i18n text pass.~~ (i18n-pass)
 - ~~SEO/meta/robots behavior for draft vs published.~~ (PR #12)
-- Observability and error handling.
+- ~~Observability and error handling.~~ (error-handling)
+
+Implemented on `error-handling`:
+
+- Localized, noindex `404.astro` and `500.astro` pages (branded, with a "back home" action) — the `500` page is resilient to locale-resolution failures.
+- Shared `withApiErrorHandling` wrapper on the mutation routes (save/delete/comments/kudos) so an unexpected throw returns each route's standard error response instead of an unhandled 500, plus a `jsonError` helper for consistent JSON error bodies.
+- e2e: unknown routes return a localized 404 page with `noindex`.
 
 Implemented on `i18n-pass`:
 
@@ -383,7 +391,5 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- Phase 7 almost complete: SEO/draft privacy (PR #12), accessibility (PR #13, axe-enforced), and the i18n sweep (`i18n-pass`) are done.
-- Remaining Phase 7 work:
-  1. Observability + error handling: friendly localized 404/500 pages, consistent API error paths.
-- Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
+- Phase 7 complete once `error-handling` merges: SEO/draft privacy (PR #12), accessibility + i18n (PR #14), and 404/500 + API error handling (`error-handling`) are all done. All six use cases plus the full hardening pass are then shipped.
+- Optional deferred cleanups (nice-to-have, not release blockers): feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.

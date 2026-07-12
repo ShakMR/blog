@@ -187,6 +187,13 @@ const es: Messages = {
     notFound: 'Borrador no encontrado.',
     lastEdit: 'Última edición',
   },
+  errors: {
+    notFoundTitle: 'Página no encontrada',
+    notFoundBody: 'La página que buscas no existe o se ha movido.',
+    serverErrorTitle: 'Algo ha ido mal',
+    serverErrorBody: 'Ha ocurrido un error inesperado. Inténtalo de nuevo en unos momentos.',
+    backHome: 'Volver al inicio',
+  },
 };
 
 export default es;
