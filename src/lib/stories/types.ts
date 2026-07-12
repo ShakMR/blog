@@ -9,6 +9,7 @@ export interface StoryRecord {
   status: 'draft' | 'published';
   comments_enabled: boolean;
   kudos_visibility: 'disabled' | 'private' | 'public';
+  indexable: boolean;
   cover_image_path: string | null;
   published_at: string | null;
   draft_access_token: string;

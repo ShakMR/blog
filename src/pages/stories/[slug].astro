@@ -74,11 +74,26 @@ const commentStatus = Astro.url.searchParams.get('comment_status');
 const commentError = Astro.url.searchParams.get('comment_error');
 const kudosStatus = Astro.url.searchParams.get('kudos_status');
 const kudosError = Astro.url.searchParams.get('kudos_error');
+
+// Authors can opt a published story out of indexing: serve noindex and ask AI
+// crawlers to stay away (robots.txt also disallows these paths for AI agents).
+const AI_OPT_OUT = 'noindex, nofollow, noai, noimageai';
+const storyRobots = !typedStory
+  ? 'noindex,nofollow'
+  : typedStory.indexable
+    ? undefined
+    : AI_OPT_OUT;
+if (typedStory && !typedStory.indexable) {
+  Astro.response.headers.set('X-Robots-Tag', AI_OPT_OUT);
+}
 ---
 
 <Layout
   title={typedStory ? `${typedStory.title} | A poc a poc i amb bona lletra` : t.stories.notFound}
   description={typedStory?.subtitle ?? t.stories.notFound}
+  image={coverUrl}
+  type="article"
+  robots={storyRobots}
 >
   <StoryPageShell>
     <StoryArticle

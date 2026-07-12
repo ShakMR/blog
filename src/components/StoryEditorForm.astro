@@ -21,6 +21,8 @@ interface EditorLabels {
   kudosPrivate: string;
   kudosPublic: string;
   commentsEnabled: string;
+  searchIndexing: string;
+  searchIndexingHint: string;
   status: string;
   statusDraft: string;
   statusPublished: string;
@@ -45,6 +47,7 @@ interface Props {
   coverUrl?: string | null;
   commentsEnabled?: boolean;
   kudosVisibility?: 'disabled' | 'private' | 'public';
+  indexable?: boolean;
   status?: 'draft' | 'published';
   bodyHtml?: string;
   bodyJson?: string;
@@ -64,6 +67,7 @@ const {
   coverUrl = null,
   commentsEnabled = true,
   kudosVisibility = 'private',
+  indexable = true,
   status = 'draft',
   bodyHtml = '',
   bodyJson = '{}',
@@ -92,7 +96,7 @@ const {
     />
   </div>
 
-  <StoryFeedbackSettings labels={labels} commentsEnabled={commentsEnabled} kudosVisibility={kudosVisibility} />
+  <StoryFeedbackSettings labels={labels} commentsEnabled={commentsEnabled} kudosVisibility={kudosVisibility} indexable={indexable} />
 
   <div class="toggles">
     <Label>

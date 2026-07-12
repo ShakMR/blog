@@ -167,6 +167,8 @@ const en: Messages = {
     kudosPrivate: 'Private kudos',
     kudosPublic: 'Public kudos',
     commentsEnabled: 'Enable comments',
+    searchIndexing: 'Allow search engines to index this story',
+    searchIndexingHint: 'If off, we ask search engines and AI crawlers not to index or crawl it.',
     status: 'Status',
     statusDraft: 'Draft',
     statusPublished: 'Published',

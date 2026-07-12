@@ -7,16 +7,32 @@ interface Props {
   title?: string;
   description?: string;
   robots?: string;
+  image?: string | null;
+  type?: 'website' | 'article';
 }
 
 const {
   title = 'A poc a poc i amb bona lletra',
   description = 'Blog de relatos cortos.',
-  robots = 'index,follow',
+  robots,
+  image = null,
+  type = 'website',
 } = Astro.props;
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
+
+// Private/utility surfaces must never be indexed; callers can still override.
+const PRIVATE_PATH_PREFIXES = ['/author', '/auth', '/me', '/draft'];
+const isPrivatePath = PRIVATE_PATH_PREFIXES.some(
+  (prefix) => Astro.url.pathname === prefix || Astro.url.pathname.startsWith(`${prefix}/`),
+);
+const resolvedRobots = robots ?? (isPrivatePath ? 'noindex,nofollow' : 'index,follow');
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).href;
+const ogImage = new URL(image ?? '/img/brand/logo-100.png', Astro.url.origin).href;
+const OG_LOCALES: Record<string, string> = { es: 'es_ES', ca: 'ca_ES', en: 'en_US' };
+const ogLocale = OG_LOCALES[locale] ?? 'es_ES';
 
 const accessToken = getAccessTokenFromCookies(Astro.cookies);
 const session = accessToken ? await getAuthSessionContext(accessToken) : null;
@@ -40,7 +56,22 @@ const localeChips = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="robots" content={robots} />
+    <meta name="robots" content={resolvedRobots} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="A poc a poc i amb bona lletra" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={ogLocale} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
     <title>{title}</title>

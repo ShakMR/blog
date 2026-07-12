@@ -165,6 +165,8 @@ export interface Messages {
     kudosPrivate: string;
     kudosPublic: string;
     commentsEnabled: string;
+    searchIndexing: string;
+    searchIndexingHint: string;
     status: string;
     statusDraft: string;
     statusPublished: string;

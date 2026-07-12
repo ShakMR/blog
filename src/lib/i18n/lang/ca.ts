@@ -167,6 +167,8 @@ const ca: Messages = {
     kudosPrivate: 'Kudos privats',
     kudosPublic: 'Kudos públics',
     commentsEnabled: 'Permetre comentaris',
+    searchIndexing: 'Permetre que els cercadors indexin aquesta història',
+    searchIndexingHint: "Si ho desactives, demanarem als cercadors i agents d'IA que no la indexin ni la rastregin.",
     status: 'Estat',
     statusDraft: 'Esborrany',
     statusPublished: 'Publicada',

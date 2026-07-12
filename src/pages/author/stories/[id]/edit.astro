@@ -67,6 +67,7 @@ const coverUrl = toPublicCoverUrl(typedStory.cover_image_path);
       coverUrl={coverUrl}
       commentsEnabled={typedStory.comments_enabled}
       kudosVisibility={typedStory.kudos_visibility}
+      indexable={typedStory.indexable}
       status={typedStory.status}
       bodyHtml={typedStory.body_html}
       bodyJson={JSON.stringify(typedStory.body_json ?? {})}

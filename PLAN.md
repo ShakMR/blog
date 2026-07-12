@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `ci-integration-e2e` (integration + e2e test suites, added as separate CI jobs)
+- Active branch: `seo-draft-privacy` (Phase 7: SEO/meta + draft privacy)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -13,8 +13,9 @@
   - ~~Phase 6 - UC6 Comments + Kudos Feedback~~ (PR #8)
   - ~~Clickable story cards (UX polish)~~ (PR #9)
   - ~~CI foundation: check + unit tests~~ (PR #10)
+  - ~~Integration + e2e test suites~~ (PR #11)
 - Still pending as standalone milestones:
-  - Phase 7 - hardening / release prep
+  - Phase 7 - hardening / release prep (SEO/draft privacy in progress; a11y + i18n + observability remain)
   - Deferred: feed pagination, automated invite email delivery
 
 ## 1) Product Scope (v1)
@@ -112,7 +113,8 @@ Planned branches:
 6. ~~`uc6-comments-anon-antispam`~~ (merged by PR #8)
 7. ~~story card click targets~~ (UX polish, merged by PR #9)
 8. ~~`ci-workflow`~~ (CI foundation, merged by PR #10)
-9. `ci-integration-e2e` (current — integration + e2e suites)
+9. ~~`ci-integration-e2e`~~ (integration + e2e suites, merged by PR #11)
+10. `seo-draft-privacy` (current — Phase 7: SEO/meta + draft privacy)
 
 Rules:
 
@@ -275,8 +277,17 @@ Goals:
 
 - Accessibility checks.
 - i18n text pass.
-- SEO/meta/robots behavior for draft vs published.
+- ~~SEO/meta/robots behavior for draft vs published.~~ (in progress on `seo-draft-privacy`)
 - Observability and error handling.
+
+Implemented on `seo-draft-privacy`:
+
+- Canonical + OpenGraph/Twitter meta in the shared layout; story pages emit `article` type with the cover image.
+- Centralized `noindex,nofollow` for private surfaces (`/author`, `/auth`, `/me`, `/draft`).
+- Dynamic `/sitemap.xml` (published stories + author profiles + public pages; drafts excluded) and `/robots.txt` (disallows private areas, links the sitemap).
+- Per-story "allow search indexing" opt-out (editor checkbox, `stories.indexable`): opted-out published stories stay reachable but are served `noindex` + `X-Robots-Tag`, dropped from the sitemap, and disallowed for AI crawlers (GPTBot, ClaudeBot, Google-Extended, …) in `robots.txt`.
+- Fixed alignment of the story feedback settings controls (radios/checkboxes now sit beside their labels).
+- e2e coverage: robots/sitemap contents, published-story canonical+OG, anon draft returns 404, owner draft preview is `noindex`, and the indexing opt-out (read + author-publish paths).
 
 Acceptance:
 
@@ -358,9 +369,9 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- Testing is now three layers (unit + integration + e2e), each a separate CI job; the RLS suite already caught and fixed the `app.is_admin()` bug.
-- On `ci-integration-e2e`: integration (Vitest + Supabase) and e2e (Playwright) suites, plus a seed script and two new CI jobs.
-- Next priorities:
-  1. Phase 7 hardening: accessibility, i18n text pass, SEO/robots for draft vs published, observability/error handling.
-  2. Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
-  3. Broaden e2e (admin invite flow, draft privacy) and make the `check-test` job a required status check once the heavier jobs are stable.
+- Phase 7 is underway: SEO/meta + draft privacy landed on `seo-draft-privacy` (canonical/OG, sitemap, robots, centralized noindex, e2e coverage).
+- Remaining Phase 7 work:
+  1. Accessibility pass (forms/controls/contrast/focus, aria) on the public + author surfaces.
+  2. i18n text pass — confirm every UI string is translated (ca/en/es), no hardcoded text.
+  3. Observability + error handling: friendly 404/500 pages, API error paths.
+- Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
