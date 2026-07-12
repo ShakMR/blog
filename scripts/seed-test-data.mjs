@@ -30,6 +30,7 @@ export const AUTHOR_SLUG = process.env.E2E_AUTHOR_SLUG ?? 'e2e-author';
 export const STORY_SLUG = process.env.E2E_STORY_SLUG ?? 'e2e-welcome';
 export const DRAFT_SLUG = process.env.E2E_DRAFT_SLUG ?? 'e2e-draft';
 export const DRAFT_TOKEN = process.env.E2E_DRAFT_TOKEN ?? '00000000-0000-4000-8000-000000000001';
+export const NOINDEX_SLUG = process.env.E2E_NOINDEX_SLUG ?? 'e2e-noindex';
 
 const url = process.env.PUBLIC_SUPABASE_URL;
 const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -94,11 +95,31 @@ async function seed() {
       status: 'published',
       comments_enabled: true,
       kudos_visibility: 'public',
+      indexable: true,
       published_at: '2026-01-01T09:00:00.000Z',
     },
     { onConflict: 'slug' },
   );
   if (storyError) throw new Error(storyError.message);
+
+  // A published story the author opted out of indexing (noindex + AI-blocked).
+  const { error: noindexError } = await supabase.from('stories').upsert(
+    {
+      author_id: userId,
+      title: 'E2E Hidden Story',
+      subtitle: 'Published but kept out of search engines',
+      slug: NOINDEX_SLUG,
+      body_html: '<p>This published story should not be indexed or crawled by AI.</p>',
+      body_json: {},
+      status: 'published',
+      comments_enabled: true,
+      kudos_visibility: 'private',
+      indexable: false,
+      published_at: '2026-01-02T09:00:00.000Z',
+    },
+    { onConflict: 'slug' },
+  );
+  if (noindexError) throw new Error(noindexError.message);
 
   // A private draft with a known access token, so e2e can assert draft privacy
   // (noindex, absent from feed/sitemap).
@@ -120,7 +141,9 @@ async function seed() {
   );
   if (draftError) throw new Error(draftError.message);
 
-  console.log(`Seeded author ${AUTHOR_EMAIL}, story /stories/${STORY_SLUG}, draft /draft/${DRAFT_TOKEN}`);
+  console.log(
+    `Seeded author ${AUTHOR_EMAIL}, story /stories/${STORY_SLUG}, hidden /stories/${NOINDEX_SLUG}, draft /draft/${DRAFT_TOKEN}`,
+  );
 }
 
 seed().catch((error) => {

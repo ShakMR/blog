@@ -285,7 +285,9 @@ Implemented on `seo-draft-privacy`:
 - Canonical + OpenGraph/Twitter meta in the shared layout; story pages emit `article` type with the cover image.
 - Centralized `noindex,nofollow` for private surfaces (`/author`, `/auth`, `/me`, `/draft`).
 - Dynamic `/sitemap.xml` (published stories + author profiles + public pages; drafts excluded) and `/robots.txt` (disallows private areas, links the sitemap).
-- e2e coverage: robots/sitemap contents, published-story canonical+OG, anon draft returns 404, owner draft preview is `noindex`.
+- Per-story "allow search indexing" opt-out (editor checkbox, `stories.indexable`): opted-out published stories stay reachable but are served `noindex` + `X-Robots-Tag`, dropped from the sitemap, and disallowed for AI crawlers (GPTBot, ClaudeBot, Google-Extended, …) in `robots.txt`.
+- Fixed alignment of the story feedback settings controls (radios/checkboxes now sit beside their labels).
+- e2e coverage: robots/sitemap contents, published-story canonical+OG, anon draft returns 404, owner draft preview is `noindex`, and the indexing opt-out (read + author-publish paths).
 
 Acceptance:
 

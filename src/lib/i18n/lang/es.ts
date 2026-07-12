@@ -167,6 +167,8 @@ const es: Messages = {
     kudosPrivate: 'Kudos privados',
     kudosPublic: 'Kudos públicos',
     commentsEnabled: 'Permitir comentarios',
+    searchIndexing: 'Permitir que los buscadores indexen esta historia',
+    searchIndexingHint: 'Si lo desactivas, pediremos a los buscadores y agentes de IA que no la indexen ni la rastreen.',
     status: 'Estado',
     statusDraft: 'Borrador',
     statusPublished: 'Publicada',

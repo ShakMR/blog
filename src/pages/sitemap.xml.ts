@@ -22,6 +22,7 @@ export const GET: APIRoute = async ({ url }) => {
     .from('stories')
     .select('slug, updated_at, published_at')
     .eq('status', 'published')
+    .eq('indexable', true)
     .order('published_at', { ascending: false })
     .limit(1000);
 

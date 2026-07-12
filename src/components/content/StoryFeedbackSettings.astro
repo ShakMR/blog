@@ -1,6 +1,5 @@
 ---
 import type { Messages } from '../../lib/i18n/types';
-import Label from '../Label.astro';
 
 type FeedbackLabels = Pick<
   Messages['editor'],
@@ -11,15 +10,18 @@ type FeedbackLabels = Pick<
   | 'kudosPublic'
   | 'kudosDisabled'
   | 'commentsEnabled'
+  | 'searchIndexing'
+  | 'searchIndexingHint'
 >;
 
 interface Props {
   labels: FeedbackLabels;
   commentsEnabled: boolean;
   kudosVisibility: 'disabled' | 'private' | 'public';
+  indexable: boolean;
 }
 
-const { labels, commentsEnabled, kudosVisibility } = Astro.props;
+const { labels, commentsEnabled, kudosVisibility, indexable } = Astro.props;
 ---
 
 <section class="feedback-settings" aria-labelledby="feedback-title">
@@ -30,25 +32,34 @@ const { labels, commentsEnabled, kudosVisibility } = Astro.props;
 
   <fieldset>
     <legend>{labels.kudosVisibility}</legend>
-    <Label>
+    <label class="option">
       <input type="radio" name="kudosVisibility" value="private" checked={kudosVisibility === 'private'} />
-      {labels.kudosPrivate}
-    </Label>
-    <Label>
+      <span>{labels.kudosPrivate}</span>
+    </label>
+    <label class="option">
       <input type="radio" name="kudosVisibility" value="public" checked={kudosVisibility === 'public'} />
-      {labels.kudosPublic}
-    </Label>
-    <Label>
+      <span>{labels.kudosPublic}</span>
+    </label>
+    <label class="option">
       <input type="radio" name="kudosVisibility" value="disabled" checked={kudosVisibility === 'disabled'} />
-      {labels.kudosDisabled}
-    </Label>
+      <span>{labels.kudosDisabled}</span>
+    </label>
   </fieldset>
 
-  <Label>
+  <label class="option">
     <input type="hidden" name="commentsEnabled" value="false" />
     <input type="checkbox" name="commentsEnabled" value="true" checked={commentsEnabled} />
-    {labels.commentsEnabled}
-  </Label>
+    <span>{labels.commentsEnabled}</span>
+  </label>
+
+  <div class="indexing">
+    <label class="option">
+      <input type="hidden" name="indexable" value="false" />
+      <input type="checkbox" name="indexable" value="true" checked={indexable} />
+      <span>{labels.searchIndexing}</span>
+    </label>
+    <p class="hint">{labels.searchIndexingHint}</p>
+  </div>
 </section>
 
 <style lang="scss">
@@ -87,8 +98,30 @@ const { labels, commentsEnabled, kudosVisibility } = Astro.props;
     margin-bottom: var(--space-2);
   }
 
-  label {
+  .option {
     display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .option input {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  .indexing {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .hint {
+    margin: 0;
+    padding-left: calc(1rem + var(--space-2));
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
   }
 </style>
