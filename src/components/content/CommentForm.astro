@@ -1,5 +1,6 @@
 ---
 import type { Messages } from '../../lib/i18n/types';
+import { createChallenge } from '../../lib/comments/challenge';
 import FormField from '../ui/FormField.astro';
 import SubmitButton from '../ui/SubmitButton.astro';
 
@@ -11,6 +12,10 @@ interface Props {
 
 const { storyId, storySlug, labels } = Astro.props;
 const startedAt = Date.now();
+const challenge = createChallenge();
+const challengeQuestion = labels.challengeHint
+  .replace('{a}', String(challenge.a))
+  .replace('{b}', String(challenge.b));
 ---
 
 <form class="comment-form" method="post" action="/api/comments/create">
@@ -33,7 +38,8 @@ const startedAt = Date.now();
     <textarea name="body" required maxlength="1200" rows="5" placeholder={labels.bodyPlaceholder}></textarea>
   </FormField>
 
-  <FormField label={labels.challengeLabel} hint={labels.challengeHint}>
+  <input type="hidden" name="challengeToken" value={challenge.token} />
+  <FormField label={labels.challengeLabel} hint={challengeQuestion}>
     <input name="challengeAnswer" required inputmode="numeric" autocomplete="off" placeholder={labels.challengePlaceholder} />
   </FormField>
 

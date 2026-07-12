@@ -7,6 +7,7 @@ import {
   validateCommentSubmission,
 } from '../../../lib/comments/validation';
 import type { CommentRateLimitState, CommentSubmissionError } from '../../../lib/comments/types';
+import { verifyChallenge } from '../../../lib/comments/challenge';
 import { createServiceRoleClient } from '../../../lib/supabase/server';
 import { withApiErrorHandling } from '../../../lib/http/responses';
 
@@ -26,6 +27,7 @@ export const POST: APIRoute = withApiErrorHandling(async (context) => {
     website: formData.get('website')?.toString() ?? '',
     startedAt: Number(formData.get('startedAt')?.toString() ?? 0),
     challengeAnswer: formData.get('challengeAnswer')?.toString() ?? '',
+    challengeToken: formData.get('challengeToken')?.toString() ?? '',
   });
 
   const fallbackSlug = formData.get('storySlug')?.toString() || '';
@@ -34,6 +36,11 @@ export const POST: APIRoute = withApiErrorHandling(async (context) => {
   }
 
   const payload = parsed.data;
+
+  if (!verifyChallenge(payload.challengeAnswer, payload.challengeToken)) {
+    return context.redirect(storyRedirect(payload.storySlug, 'comment_error', 'challenge_failed'), 302);
+  }
+
   const serviceClient = createServiceRoleClient();
   const { data: story } = await serviceClient
     .from('stories')

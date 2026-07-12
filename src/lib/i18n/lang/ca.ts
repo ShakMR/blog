@@ -56,7 +56,7 @@ const ca: Messages = {
     bodyLabel: 'Comentari',
     bodyPlaceholder: 'Escriu el teu comentari',
     challengeLabel: 'Control anti-spam',
-    challengeHint: 'Respon: quant és 2 + 3?',
+    challengeHint: 'Quant és {a} + {b}?',
     challengePlaceholder: 'Resposta',
     honeypot: 'Lloc web',
     submit: 'Publicar comentari',

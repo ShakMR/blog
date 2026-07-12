@@ -56,7 +56,7 @@ const en: Messages = {
     bodyLabel: 'Comment',
     bodyPlaceholder: 'Write your comment',
     challengeLabel: 'Anti-spam check',
-    challengeHint: 'Answer: what is 2 + 3?',
+    challengeHint: 'What is {a} + {b}?',
     challengePlaceholder: 'Answer',
     honeypot: 'Website',
     submit: 'Post comment',
