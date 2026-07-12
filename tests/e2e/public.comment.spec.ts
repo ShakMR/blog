@@ -11,7 +11,13 @@ test('an anonymous reader can post a valid comment', async ({ page }) => {
   const body = `Loved this one — ${Date.now()}`;
   await page.locator('.comment-form input[name="authorName"]').fill('E2E Reader');
   await page.locator('.comment-form textarea[name="body"]').fill(body);
-  await page.locator('.comment-form input[name="challengeAnswer"]').fill('5');
+
+  // Solve the dynamic arithmetic challenge shown in the field hint.
+  const question = await page
+    .locator('.comment-form label:has(input[name="challengeAnswer"]) small')
+    .textContent();
+  const [a, b] = (question ?? '').match(/\d+/g)?.map(Number) ?? [];
+  await page.locator('.comment-form input[name="challengeAnswer"]').fill(String(a + b));
 
   // Anti-spam requires at least a few seconds between render and submit.
   await page.waitForTimeout(4500);

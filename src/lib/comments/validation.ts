@@ -2,7 +2,6 @@ import { isIP } from 'node:net';
 import { z } from 'zod';
 import type { CommentRateLimitState, CommentSubmissionError } from './types';
 
-export const COMMENT_CHALLENGE_ANSWER = '5';
 export const COMMENT_MIN_SUBMIT_SECONDS = 4;
 export const COMMENT_MAX_SUBMIT_SECONDS = 60 * 60 * 2;
 export const COMMENT_RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
@@ -16,6 +15,7 @@ const commentSubmissionSchema = z.object({
   website: z.string().max(200).optional(),
   startedAt: z.coerce.number().int().positive(),
   challengeAnswer: z.string().trim().min(1).max(20),
+  challengeToken: z.string().min(1).max(200),
 });
 
 export type CommentSubmissionInput = z.input<typeof commentSubmissionSchema>;
@@ -45,10 +45,9 @@ export function validateCommentSubmission(input: CommentSubmissionInput, now = D
     return { success: false, error: 'spam_detected' };
   }
 
-  if (payload.challengeAnswer.trim() !== COMMENT_CHALLENGE_ANSWER) {
-    return { success: false, error: 'challenge_failed' };
-  }
-
+  // The arithmetic challenge itself is verified in the route handler via
+  // verifyChallenge (it needs the signing secret); here we only ensure the
+  // fields are present and the honeypot/timing gates pass.
   return { success: true, data: payload };
 }
 

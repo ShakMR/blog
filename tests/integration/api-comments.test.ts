@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { POST } from '../../src/pages/api/comments/create';
+import { createChallenge } from '../../src/lib/comments/challenge';
 import { makeApiContext, readRedirect } from './helpers/apiContext';
 import {
   clearRateLimits,
@@ -12,6 +13,7 @@ import {
 } from './helpers/fixtures';
 
 function validForm(story: StoryRow, overrides: Record<string, string> = {}) {
+  const challenge = createChallenge();
   return {
     storyId: story.id,
     storySlug: story.slug,
@@ -19,7 +21,8 @@ function validForm(story: StoryRow, overrides: Record<string, string> = {}) {
     body: 'A thoughtful, on-topic comment.',
     website: '',
     startedAt: String(Date.now() - 10_000), // 10s ago → passes the min-submit window
-    challengeAnswer: '5',
+    challengeAnswer: String(challenge.a + challenge.b),
+    challengeToken: challenge.token,
     ...overrides,
   };
 }
@@ -76,7 +79,9 @@ describe('API: POST /api/comments/create', () => {
   });
 
   it('rejects a wrong anti-spam challenge answer', async () => {
-    const result = await post(validForm(story, { challengeAnswer: '9' }));
+    // 999 can never equal a+b (each addend is 1..9), so this is always wrong
+    // regardless of the randomly generated challenge in validForm.
+    const result = await post(validForm(story, { challengeAnswer: '999' }));
     expect(result.params.get('comment_error')).toBe('challenge_failed');
     await clearRateLimits(story.id);
   });

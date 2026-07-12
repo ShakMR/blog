@@ -56,7 +56,7 @@ const es: Messages = {
     bodyLabel: 'Comentario',
     bodyPlaceholder: 'Escribe tu comentario',
     challengeLabel: 'Control anti-spam',
-    challengeHint: 'Responde: ¿cuánto es 2 + 3?',
+    challengeHint: '¿Cuánto es {a} + {b}?',
     challengePlaceholder: 'Respuesta',
     honeypot: 'Sitio web',
     submit: 'Publicar comentario',

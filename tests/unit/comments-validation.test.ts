@@ -18,6 +18,7 @@ const baseInput = {
   website: '',
   startedAt: Date.now() - (COMMENT_MIN_SUBMIT_SECONDS + 1) * 1000,
   challengeAnswer: '5',
+  challengeToken: 'exp.signature',
 };
 
 describe('comment validation', () => {
@@ -41,8 +42,8 @@ describe('comment validation', () => {
     expect(result.error).toBe('spam_detected');
   });
 
-  it('rejects wrong challenge answers', () => {
-    expect(validateCommentSubmission({ ...baseInput, challengeAnswer: '6' }).error).toBe('challenge_failed');
+  it('requires a challenge token in the payload', () => {
+    expect(validateCommentSubmission({ ...baseInput, challengeToken: '' }).error).toBe('invalid_payload');
   });
 
   it('rejects unsafe story slugs', () => {
