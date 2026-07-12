@@ -38,6 +38,7 @@ const ca: Messages = {
     excerptFallback: 'Sense extracte disponible.',
     authorBioFallback: 'Aviat hi haurà més informació sobre aquesta autora.',
     notFound: 'Història no trobada.',
+    coverAlt: 'Portada de {title}',
   },
   comments: {
     title: 'Comentaris',

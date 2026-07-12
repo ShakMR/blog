@@ -38,6 +38,7 @@ const es: Messages = {
     excerptFallback: 'Sin extracto disponible.',
     authorBioFallback: 'Próximamente habrá más información sobre esta autora.',
     notFound: 'Historia no encontrada.',
+    coverAlt: 'Portada de {title}',
   },
   comments: {
     title: 'Comentarios',

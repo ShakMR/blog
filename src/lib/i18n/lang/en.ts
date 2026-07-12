@@ -38,6 +38,7 @@ const en: Messages = {
     excerptFallback: 'No excerpt available.',
     authorBioFallback: 'More information about this author will be available soon.',
     notFound: 'Story not found.',
+    coverAlt: 'Cover of {title}',
   },
   comments: {
     title: 'Comments',

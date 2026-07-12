@@ -36,6 +36,7 @@ export interface Messages {
     excerptFallback: string;
     authorBioFallback: string;
     notFound: string;
+    coverAlt: string;
   };
   comments: {
     title: string;

@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `accessibility-pass` (Phase 7: accessibility)
+- Active branch: `i18n-pass` (Phase 7: i18n text sweep) — stacked on `accessibility-pass` (PR #13)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -116,7 +116,8 @@ Planned branches:
 8. ~~`ci-workflow`~~ (CI foundation, merged by PR #10)
 9. ~~`ci-integration-e2e`~~ (integration + e2e suites, merged by PR #11)
 10. ~~`seo-draft-privacy`~~ (Phase 7: SEO/meta + draft privacy, merged by PR #12)
-11. `accessibility-pass` (current — Phase 7: accessibility)
+11. `accessibility-pass` (Phase 7: accessibility, PR #13)
+12. `i18n-pass` (current — Phase 7: i18n text sweep, stacked on PR #13)
 
 Rules:
 
@@ -277,10 +278,15 @@ Known follow-ups (deferred, not blockers):
 
 Goals:
 
-- ~~Accessibility checks.~~ (accessibility-pass)
-- i18n text pass.
+- ~~Accessibility checks.~~ (accessibility-pass, PR #13)
+- ~~i18n text pass.~~ (i18n-pass)
 - ~~SEO/meta/robots behavior for draft vs published.~~ (PR #12)
 - Observability and error handling.
+
+Implemented on `i18n-pass`:
+
+- Keys are structurally identical across es/ca/en (TS-enforced); no untranslated/English-leaked values.
+- Replaced the last hardcoded UI strings: the Spanish cover-image alt (`Portada de …`) is now a localized `stories.coverAlt` template used everywhere, and the admin new-author locale options use `localeNames`.
 
 Implemented on `accessibility-pass`:
 
@@ -377,8 +383,7 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- Phase 7 nearly done: SEO/draft privacy (PR #12) and accessibility (`accessibility-pass`, axe-enforced) landed.
+- Phase 7 almost complete: SEO/draft privacy (PR #12), accessibility (PR #13, axe-enforced), and the i18n sweep (`i18n-pass`) are done.
 - Remaining Phase 7 work:
-  1. i18n text pass — confirm every UI string is translated (ca/en/es), no hardcoded text.
-  2. Observability + error handling: friendly 404/500 pages, API error paths.
+  1. Observability + error handling: friendly localized 404/500 pages, consistent API error paths.
 - Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
