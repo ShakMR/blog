@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAuthorContext } from '../../../../lib/auth/guards';
 import { createServerSupabaseClient, createServiceRoleClient } from '../../../../lib/supabase/server';
 import { parseTags, sanitizeFilename, slugify } from '../../../../lib/stories/utils';
+import { withApiErrorHandling } from '../../../../lib/http/responses';
 
 const saveStorySchema = z.object({
   storyId: z.string().uuid().optional(),
@@ -43,7 +44,7 @@ async function resolveUniqueSlug(
   return `${candidate}-${crypto.randomUUID().slice(0, 6)}`;
 }
 
-export const POST: APIRoute = async (context) => {
+export const POST: APIRoute = withApiErrorHandling(async (context) => {
   const guard = await requireAuthorContext(context);
   if (!guard) {
     return context.redirect('/auth/login?next=/author/stories', 302);
@@ -157,4 +158,4 @@ export const POST: APIRoute = async (context) => {
   }
 
   return context.redirect(`/author/stories?status=saved&id=${storyId}`, 302);
-};
+}, (context) => context.redirect('/author/stories?error=story_save_failed', 302));

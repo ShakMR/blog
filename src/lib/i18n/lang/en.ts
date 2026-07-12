@@ -187,6 +187,13 @@ const en: Messages = {
     notFound: 'Draft not found.',
     lastEdit: 'Last edit',
   },
+  errors: {
+    notFoundTitle: 'Page not found',
+    notFoundBody: 'The page you are looking for does not exist or has moved.',
+    serverErrorTitle: 'Something went wrong',
+    serverErrorBody: 'An unexpected error occurred. Please try again in a moment.',
+    backHome: 'Back to home',
+  },
 };
 
 export default en;

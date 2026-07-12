@@ -105,9 +105,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and on pu
 
 ## Current status
 
-- Latest merged: CI foundation (PR #10), integration + e2e suites (PR #11), and SEO + draft privacy + indexing opt-out (PR #12).
-- Features: author login, admin-invited authors, WYSIWYG editor with draft/publish + cover images, public newest-publications feed, per-author pages, reader comments + kudos, and SEO (canonical/OpenGraph, `/sitemap.xml`, `/robots.txt`) with draft privacy and a per-story search-indexing opt-out (noindex + AI-crawler block).
-- Next: remaining Phase 7 hardening (i18n pass, error handling). See `PLAN.md`.
+- Latest merged: integration + e2e suites (PR #11), SEO + draft privacy + indexing opt-out (PR #12), and accessibility + i18n sweep (PR #14).
+- Features: author login, admin-invited authors, WYSIWYG editor with draft/publish + cover images, public newest-publications feed, per-author pages, reader comments + kudos, SEO (canonical/OpenGraph, `/sitemap.xml`, `/robots.txt`) with draft privacy and a per-story search-indexing opt-out (noindex + AI-crawler block), accessibility (axe-enforced), full i18n (ca/en/es), and localized 404/500 error pages.
+- Next: Phase 7 wraps up with error handling (`error-handling`); after that, only optional cleanups remain (feed pagination, invite email delivery). See `PLAN.md`.
 
 ## UC5 local admin flow
 

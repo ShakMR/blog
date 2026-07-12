@@ -187,6 +187,13 @@ const ca: Messages = {
     notFound: 'Esborrany no trobat.',
     lastEdit: 'Darrera edició',
   },
+  errors: {
+    notFoundTitle: 'Pàgina no trobada',
+    notFoundBody: "La pàgina que busques no existeix o s'ha mogut.",
+    serverErrorTitle: 'Alguna cosa ha anat malament',
+    serverErrorBody: "S'ha produït un error inesperat. Torna-ho a provar d'aquí a uns moments.",
+    backHome: "Torna a l'inici",
+  },
 };
 
 export default ca;

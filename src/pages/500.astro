@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageSection from '../components/layout/PageSection.astro';
+import PageHeader from '../components/ui/PageHeader.astro';
+import ButtonLink from '../components/ui/ButtonLink.astro';
+import { getMessages, resolveRequestLocale } from '../lib/i18n';
+
+// Rendered by Astro when an on-demand page throws. Keep this resilient and
+// never surface the underlying error to the visitor.
+let locale: ReturnType<typeof resolveRequestLocale> = 'es';
+try {
+  locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
+} catch {
+  locale = 'es';
+}
+const t = getMessages(locale);
+---
+
+<Layout
+  title={`${t.errors.serverErrorTitle} | A poc a poc i amb bona lletra`}
+  description={t.errors.serverErrorBody}
+  robots="noindex,nofollow"
+>
+  <PageSection class="error-page">
+    <PageHeader eyebrow="500" title={t.errors.serverErrorTitle} description={t.errors.serverErrorBody} />
+    <ButtonLink href="/" text={t.errors.backHome} variant="primary" />
+  </PageSection>
+</Layout>
+
+<style lang="scss">
+  .error-page {
+    padding-block: var(--space-12);
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+  }
+</style>
