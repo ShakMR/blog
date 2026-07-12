@@ -14,6 +14,7 @@ interface EditorLabels {
   fieldCover: string;
   coverCta: string;
   coverEmpty: string;
+  bodyLabel: string;
   feedbackTitle: string;
   feedbackDescription: string;
   kudosVisibility: string;
@@ -116,7 +117,7 @@ const {
       <button type="button" data-cmd="heading">{labels.toolbarHeading}</button>
       <button type="button" data-cmd="paragraph">{labels.toolbarParagraph}</button>
     </div>
-    <div id="editor" class="editor"></div>
+    <div id="editor" class="editor" data-editor-label={labels.bodyLabel}></div>
   </div>
 
   <input type="hidden" name="bodyHtml" id="body-html" value={bodyHtml} />
@@ -161,6 +162,13 @@ const {
     element: editorElement,
     extensions: [StarterKit],
     content: initialContent,
+    editorProps: {
+      attributes: {
+        role: 'textbox',
+        'aria-multiline': 'true',
+        'aria-label': editorElement.dataset.editorLabel ?? 'Story body',
+      },
+    },
     onUpdate: ({ editor: currentEditor }) => {
       bodyHtml.value = currentEditor.getHTML();
       bodyJson.value = JSON.stringify(currentEditor.getJSON());

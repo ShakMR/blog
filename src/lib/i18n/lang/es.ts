@@ -11,6 +11,7 @@ const es: Messages = {
     authorSpace: 'Espacio de autor',
     signedInAs: 'Conectado como',
     language: 'Idioma',
+    skipToContent: 'Saltar al contenido',
   },
   localeNames: {
     es: 'Español',
@@ -160,6 +161,7 @@ const es: Messages = {
     fieldCover: 'Portada',
     coverCta: 'Click para cambiar la imagen',
     coverEmpty: 'Sin portada',
+    bodyLabel: 'Cuerpo de la historia',
     feedbackTitle: 'Feedback de la historia',
     feedbackDescription: 'Elige cómo pueden reaccionar las lectoras a esta historia.',
     kudosVisibility: 'Kudos',

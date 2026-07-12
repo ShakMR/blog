@@ -9,6 +9,7 @@ export interface Messages {
     authorSpace: string;
     signedInAs: string;
     language: string;
+    skipToContent: string;
   };
   localeNames: {
     es: string;
@@ -158,6 +159,7 @@ export interface Messages {
     fieldCover: string;
     coverCta: string;
     coverEmpty: string;
+    bodyLabel: string;
     feedbackTitle: string;
     feedbackDescription: string;
     kudosVisibility: string;
