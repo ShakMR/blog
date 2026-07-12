@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `error-handling` (Phase 7: 404/500 pages + API error handling)
+- Active branch: `docs-sync` (documentation sync; all planned work shipped)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -16,9 +16,14 @@
   - ~~Integration + e2e test suites~~ (PR #11)
   - ~~SEO/meta + draft privacy + indexing opt-out~~ (PR #12)
   - ~~Accessibility + i18n sweep~~ (PR #14; #13 closed as superseded)
+  - ~~Error handling: 404/500 + safe API failures~~ (PR #15)
+  - ~~Feed pagination~~ (PR #16)
+  - ~~Stronger comment challenge (dynamic, HMAC-signed)~~ (PR #17)
+  - ~~`comment_rate_limits` GC~~ (PR #18)
+  - ~~Automated invite email via Resend~~ (PR #19)
 - Still pending as standalone milestones:
-  - Phase 7 - hardening / release prep — complete (SEO/draft privacy PR #12, a11y + i18n PR #14, error handling PR #15)
-  - Deferred: `comment_rate_limits` GC, stronger comment challenge, automated invite email delivery (feed pagination shipped on `feed-pagination`)
+  - None — all six use cases, the full Phase 7 hardening pass, and every deferred cleanup are shipped.
+  - Future (optional, unplanned): comment moderation, richer editor, analytics.
 
 ## 1) Product Scope (v1)
 
@@ -119,7 +124,12 @@ Planned branches:
 10. ~~`seo-draft-privacy`~~ (Phase 7: SEO/meta + draft privacy, merged by PR #12)
 11. ~~`accessibility-pass`~~ (Phase 7: accessibility — closed, superseded by PR #14)
 12. ~~`i18n-pass`~~ (Phase 7: accessibility + i18n, merged by PR #14)
-13. `error-handling` (current — Phase 7: 404/500 + API error handling)
+13. ~~`error-handling`~~ (Phase 7: 404/500 + API error handling, merged by PR #15)
+14. ~~`feed-pagination`~~ (paginated `/stories`, merged by PR #16)
+15. ~~`comment-challenge`~~ (dynamic HMAC-signed challenge, merged by PR #17)
+16. ~~`rate-limit-gc`~~ (`comment_rate_limits` GC, merged by PR #18)
+17. ~~`resend-email`~~ (automated invite email, merged by PR #19)
+18. `docs-sync` (current — documentation sync)
 
 Rules:
 
@@ -271,10 +281,10 @@ Acceptance:
 - ~~Disabled comments block submissions.~~
 - ~~Spam heuristics block obvious abuse patterns.~~
 
-Known follow-ups (deferred, not blockers):
+Known follow-ups (resolved):
 
-- Challenge answer is currently static (`5`); rotate or randomize before a public launch.
-- `comment_rate_limits` rows are never garbage-collected.
+- ~~Challenge answer is currently static (`5`); rotate or randomize before a public launch.~~ — replaced with a per-render, HMAC-signed challenge (PR #17).
+- ~~`comment_rate_limits` rows are never garbage-collected.~~ — opportunistic GC on comment posts (PR #18).
 
 ## Phase 7 - Hardening and Release Prep (1-2 days)
 
@@ -391,5 +401,6 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- Phase 7 complete once `error-handling` merges: SEO/draft privacy (PR #12), accessibility + i18n (PR #14), and 404/500 + API error handling (`error-handling`) are all done. All six use cases plus the full hardening pass are then shipped.
-- Optional deferred cleanups (nice-to-have, not release blockers): feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
+- v1 is feature-complete: all six use cases, the full Phase 7 hardening pass (SEO/draft privacy, accessibility, i18n, error handling), and every deferred cleanup (pagination PR #16, dynamic comment challenge PR #17, `comment_rate_limits` GC PR #18, Resend invite email PR #19) are shipped, with CI (unit + integration + e2e) green on `primary`.
+- Before a public launch: point `RESEND_API_KEY`/`RESEND_FROM` at a verified Resend domain to enable automated invites (falls back to the manual draft until then), and consider a dedicated `COMMENT_CHALLENGE_SECRET`.
+- Future, unplanned ideas: comment moderation, richer WYSIWYG, tags/search, analytics.
