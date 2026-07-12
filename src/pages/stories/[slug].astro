@@ -100,7 +100,7 @@ if (typedStory && !typedStory.indexable) {
       story={typedStory}
       notFoundLabel={t.stories.notFound}
       coverUrl={coverUrl}
-      coverAlt={typedStory ? `Portada de ${typedStory.title}` : undefined}
+      coverAlt={typedStory ? t.stories.coverAlt.replace('{title}', typedStory.title) : undefined}
       meta={typedStory ? `${t.stories.publishedAt}: ${formatDate(typedStory.published_at, locale)}` : undefined}
       authorLabel={authorLabel}
       authorName={authorName}

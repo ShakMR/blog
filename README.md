@@ -85,7 +85,7 @@ Three layers:
 
 - **Unit** (`npm run test`, Vitest) — pure domain/validation logic; no services.
 - **Integration** (`npm run test:integration`, Vitest + real Supabase) — RLS access boundaries for stories/comments/kudos and the comments/kudos API handlers (honeypot, timing, challenge, rate limiting, cookie dedup). Needs the local Supabase stack running.
-- **E2E** (`npm run test:e2e`, Playwright) — public feed/card/comment/kudos flows and the authed login → publish journey. Run `npm run seed:test` first, and make sure the app builds against the local Supabase stack.
+- **E2E** (`npm run test:e2e`, Playwright) — public feed/card/comment/kudos/SEO flows, the authed login → publish journey, and axe accessibility scans over the key pages. Run `npm run seed:test` first, and make sure the app builds against the local Supabase stack.
 
 Local e2e quickstart:
 
@@ -105,9 +105,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and on pu
 
 ## Current status
 
-- Latest merged: fully clickable story cards (PR #9), CI foundation (PR #10), and integration + e2e suites (PR #11).
+- Latest merged: CI foundation (PR #10), integration + e2e suites (PR #11), and SEO + draft privacy + indexing opt-out (PR #12).
 - Features: author login, admin-invited authors, WYSIWYG editor with draft/publish + cover images, public newest-publications feed, per-author pages, reader comments + kudos, and SEO (canonical/OpenGraph, `/sitemap.xml`, `/robots.txt`) with draft privacy and a per-story search-indexing opt-out (noindex + AI-crawler block).
-- Next: remaining Phase 7 hardening (accessibility, i18n pass, error handling). See `PLAN.md`.
+- Next: remaining Phase 7 hardening (i18n pass, error handling). See `PLAN.md`.
 
 ## UC5 local admin flow
 

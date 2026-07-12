@@ -11,6 +11,7 @@ const en: Messages = {
     authorSpace: 'Author space',
     signedInAs: 'Signed in as',
     language: 'Language',
+    skipToContent: 'Skip to content',
   },
   localeNames: {
     es: 'Español',
@@ -37,6 +38,7 @@ const en: Messages = {
     excerptFallback: 'No excerpt available.',
     authorBioFallback: 'More information about this author will be available soon.',
     notFound: 'Story not found.',
+    coverAlt: 'Cover of {title}',
   },
   comments: {
     title: 'Comments',
@@ -160,6 +162,7 @@ const en: Messages = {
     fieldCover: 'Cover',
     coverCta: 'Click to change image',
     coverEmpty: 'No cover image',
+    bodyLabel: 'Story body',
     feedbackTitle: 'Story feedback',
     feedbackDescription: 'Choose how readers can react to this story.',
     kudosVisibility: 'Kudos',

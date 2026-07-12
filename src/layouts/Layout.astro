@@ -77,6 +77,7 @@ const localeChips = [
     <title>{title}</title>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">{t.nav.skipToContent}</a>
     <header class="site-header">
       <div class="container header-grid">
         <a class="brand" href="/">
@@ -99,7 +100,7 @@ const localeChips = [
               <form id="language-form" method="post" action="/api/i18n/locale" class="locale-form">
                 <input type="hidden" name="next" value={nextPath} />
                 <button type="submit" name="submit" hidden/>
-                <select id='locale-selector' class="locale-chips" name="locale" onchange="">
+                <select id='locale-selector' class="locale-chips" name="locale" aria-label={t.nav.language} onchange="">
                   {localeChips.map((option) => (
                     <option
                       value={option.value}
@@ -127,7 +128,7 @@ const localeChips = [
         </nav>
       </div>
     </header>
-    <main>
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
   </body>
@@ -140,6 +141,27 @@ const localeChips = [
 </script>
 
 <style lang="scss">
+  .skip-link {
+    position: absolute;
+    left: var(--space-2);
+    top: -4rem;
+    z-index: 100;
+    padding: 0.55rem 0.9rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-text);
+    color: var(--color-bg);
+    text-decoration: none;
+    transition: top var(--transition-base);
+  }
+
+  .skip-link:focus {
+    top: var(--space-2);
+  }
+
+  #main-content:focus {
+    outline: none;
+  }
+
   .site-header {
     position: sticky;
     top: 0;

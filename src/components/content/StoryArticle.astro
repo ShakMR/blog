@@ -38,7 +38,7 @@ const hasAuthor = Boolean(authorLabel && authorName && authorBio);
 {story ? (
   <div class:list={['story-layout', !hasAuthor && 'single']}>
     <article>
-      {coverUrl && <img src={coverUrl} alt={coverAlt || `Portada de ${story.title}`} class="cover" loading="lazy" />}
+      {coverUrl && <img src={coverUrl} alt={coverAlt || story.title} class="cover" loading="lazy" />}
       <PageHeader title={story.title} eyebrow={eyebrow} description={story.subtitle}>
         {meta && <p class="meta">{meta}</p>}
       </PageHeader>

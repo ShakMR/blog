@@ -11,6 +11,7 @@ const ca: Messages = {
     authorSpace: 'Espai d\'autor',
     signedInAs: 'Connectat com',
     language: 'Idioma',
+    skipToContent: 'Salta al contingut',
   },
   localeNames: {
     es: 'Español',
@@ -37,6 +38,7 @@ const ca: Messages = {
     excerptFallback: 'Sense extracte disponible.',
     authorBioFallback: 'Aviat hi haurà més informació sobre aquesta autora.',
     notFound: 'Història no trobada.',
+    coverAlt: 'Portada de {title}',
   },
   comments: {
     title: 'Comentaris',
@@ -160,6 +162,7 @@ const ca: Messages = {
     fieldCover: 'Portada',
     coverCta: 'Clica per canviar la imatge',
     coverEmpty: 'Sense portada',
+    bodyLabel: 'Cos de la història',
     feedbackTitle: 'Feedback de la història',
     feedbackDescription: 'Tria com poden reaccionar les lectores a aquesta història.',
     kudosVisibility: 'Kudos',

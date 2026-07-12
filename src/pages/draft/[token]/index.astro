@@ -38,7 +38,7 @@ const coverUrl = typedStory ? toPublicCoverUrl(typedStory.cover_image_path) : nu
       story={typedStory}
       notFoundLabel={t.draft.notFound}
       coverUrl={coverUrl}
-      coverAlt={typedStory ? `Portada de ${typedStory.title}` : undefined}
+      coverAlt={typedStory ? t.stories.coverAlt.replace('{title}', typedStory.title) : undefined}
       eyebrow={t.draft.privateEyebrow}
       meta={typedStory ? `${t.draft.lastEdit}: ${formatDate(typedStory.updated_at, locale)}` : undefined}
     />

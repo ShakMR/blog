@@ -3,6 +3,7 @@ import type { SupportedLocale } from '../../config/site';
 import type { Messages } from '../../lib/i18n/types';
 import type { StoryRecord } from '../../lib/stories/types';
 import { formatDate, toPublicCoverUrl } from '../../lib/stories/utils';
+import { getMessages } from '../../lib/i18n';
 import StoryCard from '../StoryCard.astro';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const { stories, kudosCounts = {}, locale, labels } = Astro.props;
+const t = getMessages(locale);
 ---
 
 <ul class="stories-list">
@@ -27,7 +29,7 @@ const { stories, kudosCounts = {}, locale, labels } = Astro.props;
           title={story.title}
           subtitle={story.subtitle}
           coverUrl={toPublicCoverUrl(story.cover_image_path)}
-          coverAlt={`Portada de ${story.title}`}
+          coverAlt={t.stories.coverAlt.replace('{title}', story.title)}
           statusLabel={story.status === 'published' ? labels.statusPublished : labels.statusDraft}
           updatedAtLabel={labels.lastEdit}
           updatedAtValue={formatDate(story.updated_at, locale)}

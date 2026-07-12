@@ -2,7 +2,7 @@
 
 ## Status Snapshot
 
-- Active branch: `seo-draft-privacy` (Phase 7: SEO/meta + draft privacy)
+- Active branch: `i18n-pass` (Phase 7: i18n text sweep) — stacked on `accessibility-pass` (PR #13)
 - Merged to `primary`:
   - ~~Phase 0 - Infra Bootstrap~~
   - ~~Phase 1 - UC1 Author Login~~
@@ -14,8 +14,9 @@
   - ~~Clickable story cards (UX polish)~~ (PR #9)
   - ~~CI foundation: check + unit tests~~ (PR #10)
   - ~~Integration + e2e test suites~~ (PR #11)
+  - ~~SEO/meta + draft privacy + indexing opt-out~~ (PR #12)
 - Still pending as standalone milestones:
-  - Phase 7 - hardening / release prep (SEO/draft privacy in progress; a11y + i18n + observability remain)
+  - Phase 7 - hardening / release prep (a11y in progress; i18n + observability remain)
   - Deferred: feed pagination, automated invite email delivery
 
 ## 1) Product Scope (v1)
@@ -114,7 +115,9 @@ Planned branches:
 7. ~~story card click targets~~ (UX polish, merged by PR #9)
 8. ~~`ci-workflow`~~ (CI foundation, merged by PR #10)
 9. ~~`ci-integration-e2e`~~ (integration + e2e suites, merged by PR #11)
-10. `seo-draft-privacy` (current — Phase 7: SEO/meta + draft privacy)
+10. ~~`seo-draft-privacy`~~ (Phase 7: SEO/meta + draft privacy, merged by PR #12)
+11. `accessibility-pass` (Phase 7: accessibility, PR #13)
+12. `i18n-pass` (current — Phase 7: i18n text sweep, stacked on PR #13)
 
 Rules:
 
@@ -275,10 +278,21 @@ Known follow-ups (deferred, not blockers):
 
 Goals:
 
-- Accessibility checks.
-- i18n text pass.
-- ~~SEO/meta/robots behavior for draft vs published.~~ (in progress on `seo-draft-privacy`)
+- ~~Accessibility checks.~~ (accessibility-pass, PR #13)
+- ~~i18n text pass.~~ (i18n-pass)
+- ~~SEO/meta/robots behavior for draft vs published.~~ (PR #12)
 - Observability and error handling.
+
+Implemented on `i18n-pass`:
+
+- Keys are structurally identical across es/ca/en (TS-enforced); no untranslated/English-leaked values.
+- Replaced the last hardcoded UI strings: the Spanish cover-image alt (`Portada de …`) is now a localized `stories.coverAlt` template used everywhere, and the admin new-author locale options use `localeNames`.
+
+Implemented on `accessibility-pass`:
+
+- Gave the header language `<select>` an accessible name and the Tiptap editor an `aria-label` (the two axe critical/serious violations).
+- Added a keyboard skip link to `#main-content`.
+- Automated axe scans (`@axe-core/playwright`) over the public + author pages in the e2e suite, failing on serious/critical WCAG 2.1 A/AA violations.
 
 Implemented on `seo-draft-privacy`:
 
@@ -369,9 +383,7 @@ This plan is the baseline and can be refined after each UC based on VQA feedback
 
 ## Immediate Next Step
 
-- Phase 7 is underway: SEO/meta + draft privacy landed on `seo-draft-privacy` (canonical/OG, sitemap, robots, centralized noindex, e2e coverage).
+- Phase 7 almost complete: SEO/draft privacy (PR #12), accessibility (PR #13, axe-enforced), and the i18n sweep (`i18n-pass`) are done.
 - Remaining Phase 7 work:
-  1. Accessibility pass (forms/controls/contrast/focus, aria) on the public + author surfaces.
-  2. i18n text pass — confirm every UI string is translated (ca/en/es), no hardcoded text.
-  3. Observability + error handling: friendly 404/500 pages, API error paths.
+  1. Observability + error handling: friendly localized 404/500 pages, consistent API error paths.
 - Deferred cleanups: feed pagination, `comment_rate_limits` GC, stronger/rotating comment challenge, automated invite email delivery.
