@@ -105,9 +105,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and on pu
 
 ## Current status
 
-- Latest merged: SEO + draft privacy + indexing opt-out (PR #12), accessibility + i18n sweep (PR #14), and error handling (PR #15).
-- Features: author login, admin-invited authors, WYSIWYG editor with draft/publish + cover images, public newest-publications feed (paginated `/stories`), per-author pages, reader comments + kudos, SEO (canonical/OpenGraph, `/sitemap.xml`, `/robots.txt`) with draft privacy and a per-story search-indexing opt-out (noindex + AI-crawler block), accessibility (axe-enforced), full i18n (ca/en/es), and localized 404/500 error pages.
-- Next: optional cleanups — stronger comment challenge, `comment_rate_limits` GC, automated invite email delivery. See `PLAN.md`.
+- v1 is feature-complete: all six use cases, the full Phase 7 hardening pass, and the deferred cleanups (pagination, dynamic comment challenge, rate-limit GC, Resend invite email) are shipped with CI green on `primary`.
+- Features: author login, admin-invited authors (invites emailed via Resend, with a manual-draft fallback), WYSIWYG editor with draft/publish + cover images, paginated public feed, per-author pages, reader comments (dynamic anti-spam challenge + rate limiting) + kudos, SEO (canonical/OpenGraph, `/sitemap.xml`, `/robots.txt`) with draft privacy and a per-story search-indexing opt-out (noindex + AI-crawler block), accessibility (axe-enforced), full i18n (ca/en/es), and localized 404/500 error pages.
+- Before launch: set `RESEND_API_KEY`/`RESEND_FROM` (verified Resend domain) to send invites automatically. See `PLAN.md`.
 
 ## UC5 local admin flow
 
@@ -132,10 +132,10 @@ npm run dev
 - Open `/author` and confirm the dashboard shows user information, latest stories, and the admin-only create-author action.
 - Open `/author/admin/users/new` from the dashboard create-author action.
 - Create a new author with email, display name, optional slug, locale, and a temporary password.
-- Confirm the page shows a ready-to-send email draft with recipient, subject, and body.
+- Without `RESEND_API_KEY`/`RESEND_FROM` set (the default locally), confirm the page shows a ready-to-send email draft with recipient, subject, and body. With Resend configured, the invite is emailed automatically and a "sent" confirmation is shown instead.
 - Log out and log in with the new author account.
 - Confirm the new user can access `/author` and `/author/stories/new`.
-- Copy the draft into Gmail manually and send it to the new author.
+- If using the manual draft, copy it into your email client and send it to the new author.
 
 ## UC2 + UC3 local VQA
 
