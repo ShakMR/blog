@@ -8,6 +8,7 @@ import {
 } from '../../../lib/comments/validation';
 import type { CommentRateLimitState, CommentSubmissionError } from '../../../lib/comments/types';
 import { createServiceRoleClient } from '../../../lib/supabase/server';
+import { withApiErrorHandling } from '../../../lib/http/responses';
 
 function storyRedirect(slug: string, key: 'comment_status' | 'comment_error', value: string): string {
   const params = new URLSearchParams({ [key]: value });
@@ -15,7 +16,7 @@ function storyRedirect(slug: string, key: 'comment_status' | 'comment_error', va
   return safeSlug ? `/stories/${safeSlug}?${params.toString()}#comments` : `/stories?${params.toString()}`;
 }
 
-export const POST: APIRoute = async (context) => {
+export const POST: APIRoute = withApiErrorHandling(async (context) => {
   const formData = await context.request.formData();
   const parsed = validateCommentSubmission({
     storyId: formData.get('storyId')?.toString() ?? '',
@@ -78,4 +79,4 @@ export const POST: APIRoute = async (context) => {
   }
 
   return context.redirect(storyRedirect(payload.storySlug, 'comment_status', 'posted'), 302);
-};
+}, (context) => context.redirect('/stories?comment_error=submit_failed', 302));

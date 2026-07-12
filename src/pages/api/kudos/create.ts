@@ -10,6 +10,7 @@ import {
   validateKudosSubmission,
 } from '../../../lib/kudos/validation';
 import { createServiceRoleClient } from '../../../lib/supabase/server';
+import { withApiErrorHandling } from '../../../lib/http/responses';
 
 function storyRedirect(slug: string, key: 'kudos_status' | 'kudos_error', value: string): string {
   const params = new URLSearchParams({ [key]: value });
@@ -29,7 +30,7 @@ function kudosResponse(context: Parameters<APIRoute>[0], slug: string, ok: boole
   return context.redirect(storyRedirect(slug, ok ? 'kudos_status' : 'kudos_error', value), 302);
 }
 
-export const POST: APIRoute = async (context) => {
+export const POST: APIRoute = withApiErrorHandling(async (context) => {
   const origin = context.request.headers.get('origin');
   if (origin && origin !== context.url.origin) {
     return kudosResponse(context, '', false, 'invalid_origin');
@@ -84,4 +85,4 @@ export const POST: APIRoute = async (context) => {
     .eq('story_id', payload.storyId);
 
   return kudosResponse(context, payload.storySlug, true, 'sent', count ?? 0);
-};
+}, (context) => kudosResponse(context, '', false, 'submit_failed'));
