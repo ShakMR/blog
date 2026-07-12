@@ -17,8 +17,8 @@
   - ~~SEO/meta + draft privacy + indexing opt-out~~ (PR #12)
   - ~~Accessibility + i18n sweep~~ (PR #14; #13 closed as superseded)
 - Still pending as standalone milestones:
-  - Phase 7 - hardening / release prep (error handling in progress on `error-handling`; then complete)
-  - Deferred: feed pagination, `comment_rate_limits` GC, stronger comment challenge, automated invite email delivery
+  - Phase 7 - hardening / release prep — complete (SEO/draft privacy PR #12, a11y + i18n PR #14, error handling PR #15)
+  - Deferred: `comment_rate_limits` GC, stronger comment challenge, automated invite email delivery (feed pagination shipped on `feed-pagination`)
 
 ## 1) Product Scope (v1)
 

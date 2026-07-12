@@ -1,5 +1,6 @@
 ---
 import StoryCardGrid from '../../components/content/StoryCardGrid.astro';
+import Pagination from '../../components/content/Pagination.astro';
 import PageSection from '../../components/layout/PageSection.astro';
 import EmptyState from '../../components/ui/EmptyState.astro';
 import PageHeader from '../../components/ui/PageHeader.astro';
@@ -7,22 +8,18 @@ import Layout from '../../layouts/Layout.astro';
 import { getPublicAuthorsByIds } from '../../lib/authors/public';
 import { getMessages, resolveRequestLocale } from '../../lib/i18n';
 import { createServerSupabaseClient } from '../../lib/supabase/server';
-import type { StoryRecord } from '../../lib/stories/types';
+import { getPublishedStoriesPage, parsePageParam } from '../../lib/stories/pagination';
 
 const locale = resolveRequestLocale(Astro.cookies, Astro.url.pathname);
 const t = getMessages(locale);
 
 const supabase = createServerSupabaseClient();
-const { data: stories = [] } = await supabase
-  .from('stories')
-  .select('*')
-  .eq('status', 'published')
-  .order('published_at', { ascending: false })
-  .limit(48);
+const page = parsePageParam(Astro.url.searchParams.get('page'));
+const { stories: typedStories, hasPrev, hasNext } = await getPublishedStoriesPage(supabase, page);
 
-const typedStories = (stories ?? []) as StoryRecord[];
 const authorIds = [...new Set(typedStories.map((story) => story.author_id))];
 const authorById = await getPublicAuthorsByIds(authorIds);
+const showPagination = hasPrev || hasNext;
 ---
 
 <Layout title={`${t.stories.latestTitle} | A poc a poc i amb bona lletra`} description={t.home.subtitle}>
@@ -33,6 +30,10 @@ const authorById = await getPublicAuthorsByIds(authorIds);
       <EmptyState text={t.stories.empty} />
     ) : (
       <StoryCardGrid stories={typedStories} authors={authorById} locale={locale} labels={t.stories} />
+    )}
+
+    {showPagination && (
+      <Pagination page={page} hasPrev={hasPrev} hasNext={hasNext} basePath="/stories" labels={t.pagination} />
     )}
   </PageSection>
 </Layout>

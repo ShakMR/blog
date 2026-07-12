@@ -38,6 +38,12 @@ export interface Messages {
     notFound: string;
     coverAlt: string;
   };
+  pagination: {
+    previous: string;
+    next: string;
+    page: string;
+    label: string;
+  };
   comments: {
     title: string;
     empty: string;

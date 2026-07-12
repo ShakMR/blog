@@ -40,6 +40,12 @@ const ca: Messages = {
     notFound: 'Història no trobada.',
     coverAlt: 'Portada de {title}',
   },
+  pagination: {
+    previous: 'Anteriors',
+    next: 'Següents',
+    page: 'Pàgina {page}',
+    label: 'Paginació',
+  },
   comments: {
     title: 'Comentaris',
     empty: 'Encara no hi ha comentaris.',

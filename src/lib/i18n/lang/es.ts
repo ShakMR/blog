@@ -40,6 +40,12 @@ const es: Messages = {
     notFound: 'Historia no encontrada.',
     coverAlt: 'Portada de {title}',
   },
+  pagination: {
+    previous: 'Anteriores',
+    next: 'Siguientes',
+    page: 'Página {page}',
+    label: 'Paginación',
+  },
   comments: {
     title: 'Comentarios',
     empty: 'Aún no hay comentarios.',
