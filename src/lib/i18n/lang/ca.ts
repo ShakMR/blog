@@ -114,7 +114,7 @@ const ca: Messages = {
   },
   adminUsers: {
     title: 'Crear nova autora',
-    description: 'Els comptes admin també actuen com a autores. Des d\'aquí pots crear nous comptes d\'autor amb contrasenya temporal, mentre l\'avís per email queda pendent d\'integrar amb el relay.',
+    description: 'Els comptes admin també actuen com a autores. Des d\'aquí pots crear nous comptes d\'autor amb contrasenya temporal. La invitació s\'envia per email automàticament si l\'enviament està configurat; si no, es mostra un esborrany a punt per enviar.',
     email: 'Email d\'accés',
     displayName: 'Nom visible',
     slug: 'Slug públic (opcional)',
@@ -125,6 +125,7 @@ const ca: Messages = {
     backToDashboard: 'Tornar al panell',
     success: 'Usuari creat correctament',
     successPendingEmail: 'A sota tens un esborrany de l\'email per enviar-lo manualment.',
+    successEmailed: 'S\'ha enviat la invitació per email.',
     manualEmailTitle: 'Esborrany de l\'email',
     manualEmailDescription: 'Copia aquest contingut al teu client de correu i envia\'l manualment a la nova autora.',
     manualEmailTo: 'Destinatària',

@@ -123,6 +123,7 @@ export interface Messages {
     backToDashboard: string;
     success: string;
     successPendingEmail: string;
+    successEmailed: string;
     manualEmailTitle: string;
     manualEmailDescription: string;
     manualEmailTo: string;

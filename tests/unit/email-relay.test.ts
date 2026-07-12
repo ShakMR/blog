@@ -1,24 +1,22 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   buildAuthorWelcomeEmail,
-  getEmailRelayStatus,
-  sendRelayEmail,
+  isInviteEmailConfigured,
+  sendInviteEmail,
 } from '../../src/lib/email/relay';
 
-describe('email relay', () => {
+describe('invite email', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
-  it('reports relay as configured only when required env vars exist', () => {
-    vi.stubEnv('GMAIL_RELAY_URL', 'https://relay.example.com/send');
-    vi.stubEnv('GMAIL_RELAY_FROM_EMAIL', 'noreply@example.com');
+  it('reports delivery as configured only when Resend env vars exist', () => {
+    expect(isInviteEmailConfigured()).toBe(false);
 
-    expect(getEmailRelayStatus()).toEqual({
-      hasAnyRelayConfig: true,
-      isConfigured: true,
-    });
+    vi.stubEnv('RESEND_API_KEY', 're_test_key');
+    vi.stubEnv('RESEND_FROM', 'Blog <invites@blog.example.com>');
+    expect(isInviteEmailConfigured()).toBe(true);
   });
 
   it('builds the welcome email with login URL and temporary password', () => {
@@ -36,20 +34,14 @@ describe('email relay', () => {
     expect(email.html).toContain('Author Example');
   });
 
-  it('posts the expected payload to the relay', async () => {
-    vi.stubEnv('GMAIL_RELAY_URL', 'https://relay.example.com/send');
-    vi.stubEnv('GMAIL_RELAY_FROM_EMAIL', 'noreply@example.com');
-    vi.stubEnv('GMAIL_RELAY_FROM_NAME', 'Blog');
-    vi.stubEnv('GMAIL_RELAY_TOKEN', 'secret-token');
+  it('posts the expected payload to the Resend API', async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test_key');
+    vi.stubEnv('RESEND_FROM', 'Blog <invites@blog.example.com>');
 
-    const fetchSpy = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-    });
-
+    const fetchSpy = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal('fetch', fetchSpy);
 
-    await sendRelayEmail({
+    await sendInviteEmail({
       toEmail: 'author@example.com',
       toName: 'Author Example',
       subject: 'Hello',
@@ -59,33 +51,30 @@ describe('email relay', () => {
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0];
-    expect(url).toBe('https://relay.example.com/send');
-    expect(init.headers.authorization).toBe('Bearer secret-token');
+    expect(url).toBe('https://api.resend.com/emails');
+    expect(init.headers.authorization).toBe('Bearer re_test_key');
     expect(JSON.parse(init.body as string)).toEqual({
-      from: {
-        email: 'noreply@example.com',
-        name: 'Blog',
-      },
-      to: [
-        {
-          email: 'author@example.com',
-          name: 'Author Example',
-        },
-      ],
+      from: 'Blog <invites@blog.example.com>',
+      to: ['author@example.com'],
       subject: 'Hello',
       text: 'Plain',
       html: '<p>Plain</p>',
     });
   });
 
-  it('throws a typed error when the relay is misconfigured', async () => {
-    await expect(sendRelayEmail({
-      toEmail: 'author@example.com',
-      subject: 'Hello',
-      text: 'Plain',
-      html: '<p>Plain</p>',
-    })).rejects.toMatchObject({
-      code: 'misconfigured',
-    });
+  it('throws a typed error when Resend is not configured', async () => {
+    await expect(
+      sendInviteEmail({ toEmail: 'author@example.com', subject: 'Hello', text: 'Plain', html: '<p>Plain</p>' }),
+    ).rejects.toMatchObject({ code: 'not_configured' });
+  });
+
+  it('throws a delivery error when Resend responds non-2xx', async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test_key');
+    vi.stubEnv('RESEND_FROM', 'Blog <invites@blog.example.com>');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 422 }));
+
+    await expect(
+      sendInviteEmail({ toEmail: 'author@example.com', subject: 'Hello', text: 'Plain', html: '<p>Plain</p>' }),
+    ).rejects.toMatchObject({ code: 'delivery_failed' });
   });
 });

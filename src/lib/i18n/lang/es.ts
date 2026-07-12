@@ -114,7 +114,7 @@ const es: Messages = {
   },
   adminUsers: {
     title: 'Crear nueva autora',
-    description: 'Las cuentas admin también actúan como autoras. Desde aquí puedes crear nuevas cuentas de autor con contraseña temporal, mientras el aviso por email queda pendiente de integrar con el relay.',
+    description: 'Las cuentas admin también actúan como autoras. Desde aquí puedes crear nuevas cuentas de autor con contraseña temporal. La invitación se envía por email automáticamente si el envío está configurado; si no, se muestra un borrador listo para enviar.',
     email: 'Email de acceso',
     displayName: 'Nombre visible',
     slug: 'Slug público (opcional)',
@@ -125,6 +125,7 @@ const es: Messages = {
     backToDashboard: 'Volver al panel',
     success: 'Usuario creado correctamente',
     successPendingEmail: 'A continuación tienes un borrador del email para enviarlo manualmente.',
+    successEmailed: 'Se ha enviado la invitación por email.',
     manualEmailTitle: 'Borrador del email',
     manualEmailDescription: 'Copia este contenido en tu cliente de correo y envíalo manualmente a la nueva autora.',
     manualEmailTo: 'Destinataria',

@@ -114,7 +114,7 @@ const en: Messages = {
   },
   adminUsers: {
     title: 'Create new author',
-    description: 'Admin accounts also act as authors. Use this form to create new author accounts with a temporary password while email notification remains pending the relay integration.',
+    description: 'Admin accounts also act as authors. Use this form to create new author accounts with a temporary password. The invitation is emailed automatically when email delivery is configured; otherwise a ready-to-send draft is shown.',
     email: 'Login email',
     displayName: 'Display name',
     slug: 'Public slug (optional)',
@@ -125,6 +125,7 @@ const en: Messages = {
     backToDashboard: 'Back to dashboard',
     success: 'User created successfully',
     successPendingEmail: 'A ready-to-send email draft is shown below for manual delivery.',
+    successEmailed: 'The invitation email has been sent.',
     manualEmailTitle: 'Email draft',
     manualEmailDescription: 'Copy this content into your email client and send it manually to the new author.',
     manualEmailTo: 'Recipient',
