@@ -4,6 +4,7 @@ import {
   getClientIp,
   getNextRateLimitState,
   getSafeStorySlug,
+  purgeStaleCommentRateLimits,
   validateCommentSubmission,
 } from '../../../lib/comments/validation';
 import type { CommentRateLimitState, CommentSubmissionError } from '../../../lib/comments/types';
@@ -84,6 +85,9 @@ export const POST: APIRoute = withApiErrorHandling(async (context) => {
   if (error) {
     return context.redirect(storyRedirect(payload.storySlug, 'comment_error', 'submit_failed' satisfies CommentSubmissionError), 302);
   }
+
+  // Opportunistic housekeeping so the rate-limit table stays bounded.
+  await purgeStaleCommentRateLimits(serviceClient);
 
   return context.redirect(storyRedirect(payload.storySlug, 'comment_status', 'posted'), 302);
 }, (context) => context.redirect('/stories?comment_error=submit_failed', 302));

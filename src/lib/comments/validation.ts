@@ -1,5 +1,6 @@
 import { isIP } from 'node:net';
 import { z } from 'zod';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { CommentRateLimitState, CommentSubmissionError } from './types';
 
 export const COMMENT_MIN_SUBMIT_SECONDS = 4;
@@ -99,4 +100,15 @@ export function getNextRateLimitState(
     allowed: nextCount <= COMMENT_RATE_LIMIT_MAX_ATTEMPTS,
     state: { attempt_count: nextCount, window_start: existing.window_start },
   };
+}
+
+/**
+ * Delete rate-limit rows whose window has fully elapsed. Called opportunistically
+ * after a comment is stored so the table stays bounded — such rows would reset to
+ * a fresh count on the next attempt anyway. The comment_rate_limits(updated_at)
+ * index keeps this cheap. Best-effort: never throws into the request path.
+ */
+export async function purgeStaleCommentRateLimits(client: SupabaseClient, now = new Date()): Promise<void> {
+  const cutoff = new Date(now.getTime() - COMMENT_RATE_LIMIT_WINDOW_SECONDS * 1000).toISOString();
+  await client.from('comment_rate_limits').delete().lt('updated_at', cutoff);
 }
